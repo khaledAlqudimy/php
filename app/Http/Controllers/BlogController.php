@@ -81,6 +81,14 @@ class BlogController extends Controller
         ],
     ];
 
+    /**
+     * المقالات المنشورة (تستخدمها خريطة الموقع sitemap.xml)
+     */
+    public function articles(): array
+    {
+        return $this->articles;
+    }
+
     public function index()
     {
         $articles = collect($this->articles);

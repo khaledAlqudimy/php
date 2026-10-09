@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'سلة التسوق')
+@section('noindex', true)
 
 @push('styles')
 <style>

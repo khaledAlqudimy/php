@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title','تواصل معنا')
+@section('meta_description', 'تواصل مع فريق قطعة وقصة للاستفسار عن القطع، الطلبات، أو خدمة الباحث الشخصي.')
 
 @section('content')
 <div style="background:var(--color-brown);padding:4rem 0 3.5rem;text-align:center;">
@@ -53,11 +54,12 @@
             <div>
                 <h2 style="font-size:1.2rem;font-weight:700;color:var(--color-brown);margin-bottom:1.5rem;">معلومات التواصل</h2>
                 @php
-                    $info = [
-                        ['fa-envelope','البريد الإلكتروني',\App\Models\Setting::get('site_email','info@qet3a-w-qesa.sa'),'mailto:'],
-                        ['fa-phone','الهاتف',\App\Models\Setting::get('site_phone','+966 XX XXX XXXX'),'tel:'],
-                        ['fa-location-dot','العنوان',\App\Models\Setting::get('site_address','المملكة العربية السعودية'),null],
-                    ];
+                    // تُعرض البيانات الحقيقية فقط — القيم التجريبية (XX) تُخفى
+                    $info = array_filter([
+                        ['fa-envelope','البريد الإلكتروني',\App\Models\Setting::contact('site_email'),'mailto:'],
+                        ['fa-phone','الهاتف',\App\Models\Setting::contact('site_phone'),'tel:'],
+                        ['fa-location-dot','العنوان',\App\Models\Setting::contact('site_address'),null],
+                    ], fn ($row) => $row[2]);
                 @endphp
                 @foreach($info as [$icon,$label,$value,$prefix])
                     <div style="display:flex;gap:1rem;align-items:flex-start;background:var(--color-white);border-radius:var(--radius-lg);padding:1.25rem;border:1px solid var(--color-border);margin-bottom:1rem;">
@@ -67,7 +69,7 @@
                         <div>
                             <div style="font-size:.75rem;color:var(--color-text-muted);margin-bottom:.2rem;">{{ $label }}</div>
                             @if($prefix)
-                                <a href="{{ $prefix }}{{ $value }}" style="font-weight:600;color:var(--color-brown);">{{ $value }}</a>
+                                <a href="{{ $prefix }}{{ $prefix === 'tel:' ? preg_replace('/[^\d+]/', '', $value) : $value }}" {!! $prefix === 'tel:' ? 'dir="ltr"' : '' !!} style="font-weight:600;color:var(--color-brown);">{{ $value }}</a>
                             @else
                                 <div style="font-weight:600;color:var(--color-brown);">{{ $value }}</div>
                             @endif
@@ -75,9 +77,8 @@
                     </div>
                 @endforeach
 
-                @php $whatsapp = \App\Models\Setting::get('site_whatsapp'); @endphp
-                @if($whatsapp)
-                    <a href="https://wa.me/{{ preg_replace('/\D/','',$whatsapp) }}" target="_blank"
+                @if($waLink = \App\Models\Setting::whatsappLink())
+                    <a href="{{ $waLink }}" target="_blank"
                        style="display:flex;align-items:center;justify-content:center;gap:.6rem;padding:1rem;background:#25D366;color:#fff;border-radius:var(--radius-lg);font-weight:700;font-size:.95rem;text-decoration:none;margin-top:1rem;">
                         <i class="fa-brands fa-whatsapp fa-lg"></i> تواصل عبر واتساب
                     </a>

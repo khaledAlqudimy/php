@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title','المجموعات')
+@section('meta_description', 'مجموعات قطعة وقصة: تصفّح القطع الأثرية حسب الفئة والحقبة.')
 
 @section('content')
 <div style="background:var(--color-brown);padding:4rem 0 3.5rem;text-align:center;">

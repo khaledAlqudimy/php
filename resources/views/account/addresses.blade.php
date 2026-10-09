@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title','عناوين التوصيل')
+@section('noindex', true)
 
 @section('content')
 <div style="background:var(--color-brown);padding:3rem 0 2.5rem;">

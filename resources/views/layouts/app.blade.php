@@ -6,6 +6,37 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'قطعة وقصة') — معرض الأنتيك الفاخر</title>
 
+    {{-- ═══ SEO ═══ --}}
+    @php
+        // yieldContent يُرجع نصاً مُهرّباً مسبقاً → نفك التهريب حتى لا يتكرر مع {{ }}
+        $decode          = fn ($v) => trim(html_entity_decode($v, ENT_QUOTES, 'UTF-8'));
+        $metaTitle       = $decode($__env->yieldContent('title', 'قطعة وقصة')) . ' — معرض الأنتيك الفاخر';
+        $metaDescription = $decode($__env->yieldContent('meta_description'))
+            ?: 'قطعة وقصة — معرض أنتيك فاخر في السعودية: قطع أثرية أصيلة ونادرة من الأثاث الكلاسيكي والساعات والتحف، لكل قطعة قصة موثّقة.';
+        $metaImage       = $decode($__env->yieldContent('og_image'));
+    @endphp
+    <meta name="description" content="{{ $metaDescription }}">
+    <link rel="canonical" href="{{ url()->current() }}">
+    @hasSection('noindex')
+        <meta name="robots" content="noindex, nofollow">
+    @endif
+    <meta name="theme-color" content="#3A2418">
+
+    <meta property="og:site_name" content="قطعة وقصة">
+    <meta property="og:locale" content="ar_SA">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:title" content="{{ $metaTitle }}">
+    <meta property="og:description" content="{{ $metaDescription }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @if($metaImage)
+        <meta property="og:image" content="{{ $metaImage }}">
+    @endif
+    <meta name="twitter:card" content="{{ $metaImage ? 'summary_large_image' : 'summary' }}">
+
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+
+    @stack('head')
+
     {{-- خطوط Google --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -232,6 +263,21 @@
 
         .btn-outline:hover { background: var(--color-gold); color: var(--color-brown); }
 
+        /* ═══ زر واتساب عائم ═══ */
+        .wa-float {
+            position: fixed;
+            bottom: 1.25rem; left: 1.25rem;
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: #25D366;
+            color: #fff;
+            font-size: 1.75rem;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,.25);
+            z-index: 90;
+        }
+        .wa-float:hover { transform: scale(1.08); color: #fff; }
+
         /* Mobile */
         .menu-toggle { display: none; background: none; border: none; cursor: pointer; }
 
@@ -326,6 +372,13 @@
     @yield('content')
 </main>
 
+{{-- ═══ زر واتساب عائم ═══ --}}
+@if($floatingWa = \App\Models\Setting::whatsappLink('السلام عليكم، لدي استفسار عن قطعة في قطعة وقصة'))
+    <a href="{{ $floatingWa }}" class="wa-float" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+@endif
+
 {{-- ═══ Footer ═══ --}}
 <footer class="site-footer">
     <div class="footer-inner">
@@ -349,10 +402,14 @@
         </div>
         <div class="footer-col">
             <h4>تواصل معنا</h4>
+            <a href="{{ route('privacy') }}">سياسة الخصوصية</a>
+            <a href="{{ route('terms') }}">الشروط والأحكام</a>
             <a href="{{ route('contact') }}">اتصل بنا</a>
-            @php $phone = \App\Models\Setting::get('site_whatsapp') @endphp
-            @if($phone)
-                <a href="https://wa.me/{{ $phone }}">واتساب</a>
+            @if($waLink = \App\Models\Setting::whatsappLink())
+                <a href="{{ $waLink }}" target="_blank" rel="noopener">واتساب</a>
+            @endif
+            @if($sitePhone = \App\Models\Setting::contact('site_phone'))
+                <a href="tel:{{ preg_replace('/[^\d+]/', '', $sitePhone) }}" dir="ltr" style="text-align:right;">{{ $sitePhone }}</a>
             @endif
         </div>
     </div>

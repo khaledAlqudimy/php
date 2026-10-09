@@ -1,6 +1,7 @@
 {{-- ════ account/profile.blade.php ════ --}}
 @extends('layouts.app')
 @section('title','الملف الشخصي')
+@section('noindex', true)
 
 @section('content')
 <div style="background:var(--color-brown);padding:3rem 0 2.5rem;">

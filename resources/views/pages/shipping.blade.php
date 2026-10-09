@@ -1,6 +1,7 @@
 {{-- ════ pages/shipping.blade.php ════ --}}
 @extends('layouts.app')
 @section('title','الشحن والتوصيل')
+@section('meta_description', 'سياسة الشحن والتوصيل في قطعة وقصة: المدة، الرسوم، والشحن المجاني والتغليف الآمن للقطع الأثرية.')
 @section('content')
 <div style="background:var(--color-brown);padding:4rem 0 3.5rem;text-align:center;">
     <div class="container">

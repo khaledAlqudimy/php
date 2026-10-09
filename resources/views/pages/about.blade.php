@@ -1,6 +1,7 @@
 {{-- ════ pages/about.blade.php ════ --}}
 @extends('layouts.app')
 @section('title','من نحن')
+@section('meta_description', 'تعرّف على قطعة وقصة — معرض أنتيك سعودي يجمع القطع الأصيلة والنادرة ويحفظ قصصها.')
 
 @section('content')
 <div style="background:var(--color-brown);padding:4rem 0 3.5rem;text-align:center;">

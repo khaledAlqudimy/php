@@ -12,6 +12,8 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\Admin;
 
 /*
@@ -41,6 +43,11 @@ Route::get('/shipping',    fn() => view('pages.shipping'))->name('shipping');
 Route::get('/returns',     fn() => view('pages.returns'))->name('returns');
 Route::get('/faq',         fn() => view('pages.faq'))->name('faq');
 Route::get('/collections', fn() => view('pages.collections'))->name('collections');
+Route::get('/privacy',     fn() => view('pages.privacy'))->name('privacy');
+Route::get('/terms',       fn() => view('pages.terms'))->name('terms');
+
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt',  [SeoController::class, 'robots'])->name('robots');
 
 /*
 |─────────────────────────────────────────────────────────────────────────────
@@ -53,6 +60,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login',   [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register',[AuthController::class, 'register']);
+
+    // ─── استعادة كلمة المرور ───
+    Route::get('/forgot-password',        [PasswordResetController::class, 'showRequest'])->name('password.request');
+    Route::post('/forgot-password',       [PasswordResetController::class, 'sendLink'])->name('password.email')->middleware('throttle:5,10');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showReset'])->name('password.reset');
+    Route::post('/reset-password',        [PasswordResetController::class, 'reset'])->name('password.update')->middleware('throttle:5,10');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

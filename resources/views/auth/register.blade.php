@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'إنشاء حساب')
+@section('noindex', true)
 
 @push('styles')
 <style>
@@ -165,6 +166,11 @@
                         <i class="fa-regular fa-eye" id="eye2"></i>
                     </button>
                 </div>
+            </div>
+
+            <div class="terms-check" style="margin-bottom:1.25rem;">
+                <i class="fa-solid fa-shield-halved" style="color:var(--color-gold);margin-top:.2rem;"></i>
+                <span>بإنشاء حسابك فأنت توافق على <a href="{{ route('terms') }}" target="_blank">الشروط والأحكام</a> و<a href="{{ route('privacy') }}" target="_blank">سياسة الخصوصية</a>.</span>
             </div>
 
             <button type="submit" class="btn-submit">إنشاء الحساب</button>

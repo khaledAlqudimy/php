@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title','الأسئلة الشائعة')
+@section('meta_description', 'إجابات الأسئلة الشائعة عن الطلب والدفع والشحن وأصالة القطع في قطعة وقصة.')
 
 @section('content')
 <div style="background:var(--color-brown);padding:4rem 0 3.5rem;text-align:center;">

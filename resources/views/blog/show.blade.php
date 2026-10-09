@@ -1,5 +1,21 @@
 @extends('layouts.app')
 @section('title', $article['title'])
+@section('meta_description', $article['excerpt'])
+@section('og_type', 'article')
+
+@push('head')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context'      => 'https://schema.org',
+    '@type'         => 'Article',
+    'headline'      => $article['title'],
+    'description'   => $article['excerpt'],
+    'datePublished' => $article['date'],
+    'inLanguage'    => 'ar',
+    'publisher'     => ['@type' => 'Organization', 'name' => 'قطعة وقصة'],
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}
+</script>
+@endpush
 
 @push('styles')
 <style>

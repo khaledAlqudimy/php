@@ -132,3 +132,12 @@ php artisan view:cache
 | لا تظهر الصور | شغّل `php artisan storage:link` مرة أخرى |
 | خطأ في قاعدة البيانات | تحقق من بيانات `.env` في phpMyAdmin |
 | صفحة بيضاء | `APP_DEBUG=true` مؤقتاً لرؤية الخطأ، ثم أعده `false` |
+
+---
+
+## بعد النشر — الظهور في Google
+
+1. من **لوحة الإدارة ← الإعدادات** ضع رقم الهاتف والواتساب والبريد الحقيقية (القيم التجريبية مثل `XX` لا تظهر للزوار).
+2. سجّل الموقع في [Google Search Console](https://search.google.com/search-console) وأرسل خريطة الموقع:
+   `https://your-domain.com/sitemap.xml`
+3. راجع نص صفحتي **سياسة الخصوصية** و**الشروط والأحكام** (`/privacy` و `/terms`) وعدّلهما بما يناسب نشاطك قبل الإطلاق.

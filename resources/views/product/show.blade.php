@@ -1,5 +1,35 @@
 @extends('layouts.app')
 @section('title', $product->title)
+@section('meta_description', Str::limit(strip_tags($product->short_desc ?: $product->description ?: $product->story ?: $product->title . ' — قطعة أنتيك أصيلة من قطعة وقصة'), 160))
+@section('og_type', 'product')
+@if($product->images->isNotEmpty())
+    @section('og_image', url(Storage::url($product->images->first()->url)))
+@endif
+
+@push('head')
+{{-- بيانات منظمة لمحركات البحث (تظهر السعر والتوفر في نتائج Google) --}}
+<script type="application/ld+json">
+{!! json_encode(array_filter([
+    '@context'    => 'https://schema.org',
+    '@type'       => 'Product',
+    'name'        => $product->title,
+    'sku'         => $product->sku,
+    'description' => Str::limit(strip_tags($product->short_desc ?: $product->description ?: ''), 500) ?: null,
+    'image'       => $product->images->map(fn ($img) => url(Storage::url($img->url)))->values()->all() ?: null,
+    'category'    => $product->category?->name,
+    'material'    => $product->material,
+    'countryOfOrigin' => $product->country_of_origin,
+    'offers'      => [
+        '@type'         => 'Offer',
+        'url'           => route('product.show', $product->slug),
+        'priceCurrency' => 'SAR',
+        'price'         => number_format((float) $product->price, 2, '.', ''),
+        'availability'  => $product->stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
+        'itemCondition' => 'https://schema.org/UsedCondition',
+    ],
+]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}
+</script>
+@endpush
 
 @push('styles')
 <style>

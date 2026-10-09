@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'المزادات')
+@section('meta_description', 'مزادات قطعة وقصة الحصرية على القطع النادرة — سجّل اهتمامك وحدد ميزانيتك قبل موعد المزاد.')
 
 @push('styles')
 <style>
