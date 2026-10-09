@@ -86,73 +86,6 @@
         a { color: inherit; text-decoration: none; transition: var(--transition); }
         img { max-width: 100%; display: block; }
 
-        /* ═══ Header ═══ */
-        .site-header {
-            background: var(--color-brown);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: var(--shadow-md);
-        }
-
-        .header-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-            height: 72px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .site-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--color-gold);
-            letter-spacing: -.5px;
-        }
-
-        .site-logo span { color: var(--color-white); }
-
-        .header-nav { display: flex; gap: .25rem; }
-
-        .header-nav a {
-            color: rgba(255,255,255,.85);
-            font-size: .9rem;
-            padding: .5rem .75rem;
-            border-radius: var(--radius);
-            font-weight: 500;
-        }
-
-        .header-nav a:hover,
-        .header-nav a.active { color: var(--color-gold); }
-
-        .header-actions { display: flex; align-items: center; gap: .75rem; }
-
-        .header-icon {
-            position: relative;
-            color: rgba(255,255,255,.85);
-            font-size: 1.1rem;
-            padding: .5rem;
-            border-radius: 50%;
-            transition: var(--transition);
-        }
-
-        .header-icon:hover { color: var(--color-gold); background: rgba(255,255,255,.1); }
-
-        .badge {
-            position: absolute;
-            top: 0; right: 0;
-            background: var(--color-gold);
-            color: var(--color-brown);
-            font-size: .65rem;
-            font-weight: 700;
-            width: 18px; height: 18px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-        }
-
         /* ═══ Flash Messages ═══ */
         .flash-container {
             position: fixed;
@@ -278,78 +211,14 @@
         }
         .wa-float:hover { transform: scale(1.08); color: #fff; }
 
-        /* Mobile */
-        .menu-toggle { display: none; background: none; border: none; cursor: pointer; }
-
-        @media (max-width: 768px) {
-            .header-nav { display: none; }
-            .menu-toggle { display: block; color: #fff; font-size: 1.3rem; padding: .5rem; }
-
-            /* القائمة المنسدلة للجوال */
-            .header-nav.open {
-                display: flex;
-                flex-direction: column;
-                position: absolute;
-                top: 72px; right: 0; left: 0;
-                background: var(--color-brown);
-                padding: .5rem 1rem 1rem;
-                box-shadow: var(--shadow-lg);
-                border-top: 1px solid rgba(255,255,255,.1);
-            }
-            .header-nav.open a { padding: .85rem .75rem; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,.06); }
-            .header-nav.open a:last-child { border-bottom: none; }
-        }
     </style>
 
     @stack('styles')
 </head>
 <body>
 
-{{-- ═══ Header ═══ --}}
-<header class="site-header">
-    <div class="header-inner">
-        <a href="{{ route('home') }}" class="site-logo">
-            قطعة <span>وقصة</span>
-        </a>
-
-        <nav class="header-nav" id="mainNav">
-            <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">الرئيسية</a>
-            <a href="{{ route('shop') }}" class="{{ request()->routeIs('shop*') ? 'active' : '' }}">المتجر</a>
-            <a href="{{ route('auction.index') }}" class="{{ request()->routeIs('auction*') ? 'active' : '' }}">المزادات</a>
-            <a href="{{ route('personal-shopper.index') }}" class="{{ request()->routeIs('personal-shopper*') ? 'active' : '' }}">الباحث الشخصي</a>
-            <a href="{{ route('blog.index') }}" class="{{ request()->routeIs('blog*') ? 'active' : '' }}">المدونة</a>
-        </nav>
-
-        <div class="header-actions">
-            @auth
-                <a href="{{ route('account.wishlist') }}" class="header-icon" title="المفضلة">
-                    <i class="fa-regular fa-heart"></i>
-                </a>
-                <a href="{{ route('cart.index') }}" class="header-icon" title="السلة">
-                    <i class="fa-solid fa-bag-shopping"></i>
-                    @php $cartCount = auth()->user()->cartItems()->count() @endphp
-                    @if($cartCount > 0)
-                        <span class="badge">{{ $cartCount }}</span>
-                    @endif
-                </a>
-                <a href="{{ route('account.profile') }}" class="header-icon" title="حسابي">
-                    <i class="fa-regular fa-circle-user"></i>
-                </a>
-            @else
-                <a href="{{ route('login') }}" class="btn btn-outline" style="font-size:.85rem;padding:.5rem 1rem;">
-                    دخول
-                </a>
-                <a href="{{ route('register') }}" class="btn btn-primary" style="font-size:.85rem;padding:.5rem 1rem;">
-                    تسجيل
-                </a>
-            @endauth
-
-            <button class="menu-toggle" id="menuToggle" type="button" aria-label="القائمة" aria-controls="mainNav" aria-expanded="false">
-                <i class="fa-solid fa-bars" style="color:#fff;font-size:1.2rem;"></i>
-            </button>
-        </div>
-    </div>
-</header>
+{{-- ═══ Header + القائمة الرئيسية ═══ --}}
+@include('layouts.partials.header')
 
 {{-- ═══ Flash Messages ═══ --}}
 <div class="flash-container" id="flashContainer">
@@ -402,8 +271,6 @@
         </div>
         <div class="footer-col">
             <h4>تواصل معنا</h4>
-            <a href="{{ route('privacy') }}">سياسة الخصوصية</a>
-            <a href="{{ route('terms') }}">الشروط والأحكام</a>
             <a href="{{ route('contact') }}">اتصل بنا</a>
             @if($waLink = \App\Models\Setting::whatsappLink())
                 <a href="{{ $waLink }}" target="_blank" rel="noopener">واتساب</a>
@@ -415,33 +282,14 @@
     </div>
     <div class="footer-bottom">
         © {{ date('Y') }} قطعة وقصة — جميع الحقوق محفوظة
+        <span style="margin:0 .5rem;opacity:.5;">|</span>
+        <a href="{{ route('privacy') }}">سياسة الخصوصية</a>
+        <span style="margin:0 .5rem;opacity:.5;">|</span>
+        <a href="{{ route('terms') }}">الشروط والأحكام</a>
     </div>
 </footer>
 
 <script>
-    // ─── قائمة الجوال ───
-    (function () {
-        const toggle = document.getElementById('menuToggle');
-        const nav    = document.getElementById('mainNav');
-        if (!toggle || !nav) return;
-
-        const setOpen = (open) => {
-            nav.classList.toggle('open', open);
-            toggle.setAttribute('aria-expanded', open);
-            toggle.querySelector('i').className = 'fa-solid ' + (open ? 'fa-xmark' : 'fa-bars');
-        };
-
-        toggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            setOpen(!nav.classList.contains('open'));
-        });
-        document.addEventListener('click', (e) => {
-            if (nav.classList.contains('open') && !nav.contains(e.target)) setOpen(false);
-        });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
-        window.addEventListener('resize', () => { if (window.innerWidth > 768) setOpen(false); });
-    })();
-
     // ─── إخفاء Flash Messages بعد 4 ثوان ───
     setTimeout(() => {
         document.querySelectorAll('.flash').forEach(el => {
