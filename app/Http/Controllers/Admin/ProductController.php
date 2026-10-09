@@ -17,8 +17,10 @@ class ProductController extends Controller
         $query = Product::with(['category', 'images'])->latest();
 
         if ($s = $request->get('q')) {
-            $query->where('title', 'like', "%{$s}%")
+            $query->where(function ($q) use ($s) {
+                $q->where('title', 'like', "%{$s}%")
                   ->orWhere('sku', 'like', "%{$s}%");
+            });
         }
 
         if ($cat = $request->get('category')) {

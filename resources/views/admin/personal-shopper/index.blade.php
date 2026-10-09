@@ -16,7 +16,7 @@
     <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
         <thead>
             <tr style="background:#FAFAF9;border-bottom:1px solid var(--border);">
-                @foreach(['نوع القطعة','الحقبة','الميزانية','الوصف','العميل','الحالة','التاريخ','تغيير الحالة']) as $h)
+                @foreach(['نوع القطعة','الحقبة','الميزانية','الوصف','العميل','الحالة','التاريخ','تغيير الحالة'] as $h)
                     <th style="padding:.75rem 1rem;text-align:right;font-size:.72rem;font-weight:700;color:var(--muted);">{{ $h }}</th>
                 @endforeach
             </tr>

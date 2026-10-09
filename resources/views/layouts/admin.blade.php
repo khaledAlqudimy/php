@@ -197,9 +197,11 @@
         <a href="{{ route('admin.customers.index') }}" class="nav-item {{ request()->routeIs('admin.customers*') ? 'active' : '' }}">
             <i class="fa-solid fa-users"></i> العملاء
         </a>
+        @if(auth()->user()?->isManager())
         <a href="{{ route('admin.coupons.index') }}" class="nav-item {{ request()->routeIs('admin.coupons*') ? 'active' : '' }}">
             <i class="fa-solid fa-ticket"></i> الكوبونات
         </a>
+        @endif
 
         <div class="nav-section-title">الخدمات</div>
         <a href="{{ route('admin.auction-interest.index') }}" class="nav-item {{ request()->routeIs('admin.auction-interest*') ? 'active' : '' }}">
@@ -208,7 +210,11 @@
         <a href="{{ route('admin.personal-shopper.index') }}" class="nav-item {{ request()->routeIs('admin.personal-shopper*') ? 'active' : '' }}">
             <i class="fa-solid fa-magnifying-glass"></i> الباحث الشخصي
         </a>
+        <a href="{{ route('admin.messages.index') }}" class="nav-item {{ request()->routeIs('admin.messages*') ? 'active' : '' }}">
+            <i class="fa-solid fa-envelope"></i> رسائل التواصل
+        </a>
 
+        @if(auth()->user()?->isManager())
         <div class="nav-section-title">الإدارة</div>
         <a href="{{ route('admin.reports.index') }}" class="nav-item {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
             <i class="fa-solid fa-chart-bar"></i> التقارير
@@ -216,6 +222,7 @@
         <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
             <i class="fa-solid fa-gear"></i> الإعدادات
         </a>
+        @endif
     </nav>
 
     <div class="sidebar-footer">

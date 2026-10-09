@@ -9,7 +9,7 @@
     <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
         <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
             <thead><tr style="background:#FAFAF9;border-bottom:1px solid var(--border);">
-                @foreach(['الاسم','الأب','عدد المنتجات','الترتيب','']) as $h)
+                @foreach(['الاسم','الأب','عدد المنتجات','الترتيب',''] as $h)
                     <th style="padding:.75rem 1rem;text-align:right;font-size:.72rem;font-weight:700;color:var(--muted);">{{ $h }}</th>
                 @endforeach
             </tr></thead>
@@ -26,7 +26,7 @@
                                     style="padding:.35rem .7rem;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;border-radius:var(--radius);cursor:pointer;font-size:.75rem;">
                                     <i class="fa-solid fa-pen fa-xs"></i>
                                 </button>
-                                @if(!$cat->products_count)
+                                @if(!$cat->products_count && auth()->user()->isManager())
                                     <form action="{{ route('admin.categories.destroy', $cat) }}" method="POST" onsubmit="return confirm('حذف التصنيف؟')">
                                         @csrf @method('DELETE')
                                         <button type="submit" style="padding:.35rem .7rem;background:#FEE2E2;color:#DC2626;border:1px solid #FECACA;border-radius:var(--radius);cursor:pointer;font-size:.75rem;">

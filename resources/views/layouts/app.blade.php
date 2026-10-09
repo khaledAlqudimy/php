@@ -237,7 +237,21 @@
 
         @media (max-width: 768px) {
             .header-nav { display: none; }
-            .menu-toggle { display: block; color: #fff; font-size: 1.3rem; }
+            .menu-toggle { display: block; color: #fff; font-size: 1.3rem; padding: .5rem; }
+
+            /* القائمة المنسدلة للجوال */
+            .header-nav.open {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 72px; right: 0; left: 0;
+                background: var(--color-brown);
+                padding: .5rem 1rem 1rem;
+                box-shadow: var(--shadow-lg);
+                border-top: 1px solid rgba(255,255,255,.1);
+            }
+            .header-nav.open a { padding: .85rem .75rem; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,.06); }
+            .header-nav.open a:last-child { border-bottom: none; }
         }
     </style>
 
@@ -252,7 +266,7 @@
             قطعة <span>وقصة</span>
         </a>
 
-        <nav class="header-nav">
+        <nav class="header-nav" id="mainNav">
             <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">الرئيسية</a>
             <a href="{{ route('shop') }}" class="{{ request()->routeIs('shop*') ? 'active' : '' }}">المتجر</a>
             <a href="{{ route('auction.index') }}" class="{{ request()->routeIs('auction*') ? 'active' : '' }}">المزادات</a>
@@ -284,7 +298,7 @@
                 </a>
             @endauth
 
-            <button class="menu-toggle" id="menuToggle">
+            <button class="menu-toggle" id="menuToggle" type="button" aria-label="القائمة" aria-controls="mainNav" aria-expanded="false">
                 <i class="fa-solid fa-bars" style="color:#fff;font-size:1.2rem;"></i>
             </button>
         </div>
@@ -348,6 +362,29 @@
 </footer>
 
 <script>
+    // ─── قائمة الجوال ───
+    (function () {
+        const toggle = document.getElementById('menuToggle');
+        const nav    = document.getElementById('mainNav');
+        if (!toggle || !nav) return;
+
+        const setOpen = (open) => {
+            nav.classList.toggle('open', open);
+            toggle.setAttribute('aria-expanded', open);
+            toggle.querySelector('i').className = 'fa-solid ' + (open ? 'fa-xmark' : 'fa-bars');
+        };
+
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setOpen(!nav.classList.contains('open'));
+        });
+        document.addEventListener('click', (e) => {
+            if (nav.classList.contains('open') && !nav.contains(e.target)) setOpen(false);
+        });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+        window.addEventListener('resize', () => { if (window.innerWidth > 768) setOpen(false); });
+    })();
+
     // ─── إخفاء Flash Messages بعد 4 ثوان ───
     setTimeout(() => {
         document.querySelectorAll('.flash').forEach(el => {

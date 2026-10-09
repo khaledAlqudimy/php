@@ -45,6 +45,8 @@ class SettingSeeder extends Seeder
             Setting::firstOrCreate(['key' => $key], ['value' => $value]);
         }
 
+        Setting::flushCache();
+
         $this->command->info('✅ تم إنشاء إعدادات الموقع الافتراضية');
     }
 }

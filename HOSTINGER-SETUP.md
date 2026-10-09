@@ -45,7 +45,12 @@ DB_DATABASE=u123456_qet3a
 DB_USERNAME=u123456_qet3a_user
 DB_PASSWORD=كلمة_المرور_الحقيقية
 ADMIN_PASSWORD=كلمة_مرور_قوية_للمدير
+MAIL_USERNAME=info@your-domain.com
+MAIL_PASSWORD=كلمة_مرور_البريد
 ```
+
+> ⚠️ `ADMIN_PASSWORD` إلزامية (10 أحرف على الأقل) — لا توجد كلمة مرور افتراضية، وبدونها لن يُنشأ حساب المدير.
+> إعدادات `MAIL_*` مطلوبة لوصول رسائل «تواصل معنا» إلى بريد الموقع (تُحفظ أيضاً في لوحة الإدارة ← رسائل التواصل).
 
 ---
 
@@ -101,7 +106,7 @@ php artisan view:cache
 
 | الرابط | المتوقع |
 |---|---|
-| `https://your-domain.com` | صفحة Laravel الترحيبية (مؤقتاً) |
+| `https://your-domain.com` | الصفحة الرئيسية لقطعة وقصة |
 | `https://your-domain.com/admin/login` | صفحة دخول الإدارة |
 | `https://your-domain.com/up` | `{"status":"ok"}` |
 

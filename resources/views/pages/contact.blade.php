@@ -11,17 +11,19 @@
 
 <div style="padding:5rem 0;">
     <div class="container">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;">
+        <div class="contact-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;">
 
             {{-- النموذج --}}
             <div style="background:var(--color-white);border-radius:var(--radius-lg);padding:2rem;border:1px solid var(--color-border);">
                 <h2 style="font-size:1.2rem;font-weight:700;color:var(--color-brown);margin-bottom:1.5rem;">أرسل رسالة</h2>
-                @if(session('success'))
-                    <div style="background:#DCFCE7;color:#166534;border-radius:var(--radius);padding:.875rem 1rem;margin-bottom:1.25rem;font-weight:600;font-size:.875rem;">
-                        <i class="fa-solid fa-check-circle"></i> {{ session('success') }}
+                @if($errors->any())
+                    <div style="background:#FEE2E2;color:#991B1B;border-radius:var(--radius);padding:.875rem 1rem;margin-bottom:1.25rem;font-weight:600;font-size:.875rem;">
+                        @foreach($errors->all() as $error)
+                            <div><i class="fa-solid fa-circle-exclamation"></i> {{ $error }}</div>
+                        @endforeach
                     </div>
                 @endif
-                <form action="{{ route('contact') }}" method="POST">
+                <form action="{{ route('contact.store') }}" method="POST">
                     @csrf
                     @foreach([['name','الاسم الكامل','text','محمد عبدالله',true],['email','البريد الإلكتروني','email','example@email.com',true],['phone','رقم الهاتف','tel','+966...',false],['subject','الموضوع','text','استفسار عن منتج',true]] as [$n,$l,$t,$ph,$r])
                         <div style="margin-bottom:1rem;">
@@ -94,3 +96,11 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<style>
+    @media (max-width: 768px) {
+        .contact-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
+    }
+</style>
+@endpush

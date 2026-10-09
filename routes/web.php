@@ -11,6 +11,7 @@ use App\Http\Controllers\PersonalShopperController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Admin;
 
 /*
@@ -24,16 +25,17 @@ Route::get('/shop',      [ProductController::class, 'index'])->name('shop');
 Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.show');
 
 Route::get('/auction',          [AuctionController::class, 'index'])->name('auction.index');
-Route::post('/auction/interest',[AuctionController::class, 'storeInterest'])->name('auction.interest');
+Route::post('/auction/interest',[AuctionController::class, 'storeInterest'])->name('auction.interest')->middleware('throttle:10,10');
 
 Route::get('/personal-shopper',  [PersonalShopperController::class, 'index'])->name('personal-shopper.index');
-Route::post('/personal-shopper', [PersonalShopperController::class, 'store'])->name('personal-shopper.store');
+Route::post('/personal-shopper', [PersonalShopperController::class, 'store'])->name('personal-shopper.store')->middleware('throttle:10,10');
 
 Route::get('/blog',        [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 Route::get('/about',       fn() => view('pages.about'))->name('about');
-Route::get('/contact',     fn() => view('pages.contact'))->name('contact');
+Route::get('/contact',     [ContactController::class, 'show'])->name('contact');
+Route::post('/contact',    [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,10');
 Route::get('/services',    fn() => view('pages.services'))->name('services');
 Route::get('/shipping',    fn() => view('pages.shipping'))->name('shipping');
 Route::get('/returns',     fn() => view('pages.returns'))->name('returns');
@@ -108,21 +110,28 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/',                    [Admin\DashboardController::class, 'index'])->name('dashboard');
 
-        Route::resource('products',        Admin\ProductController::class);
-        Route::post('products/{slug}/images', [Admin\ProductController::class, 'uploadImages'])->name('products.images');
+        Route::resource('products',        Admin\ProductController::class)->except(['show', 'destroy']);
         Route::delete('products/images/{id}', [Admin\ProductController::class, 'deleteImage'])->name('products.images.destroy');
 
-        Route::resource('categories',      Admin\CategoryController::class);
+        Route::resource('categories',      Admin\CategoryController::class)->only(['index', 'store', 'update']);
         Route::resource('orders',          Admin\OrderController::class)->only(['index','show','update']);
         Route::resource('customers',       Admin\CustomerController::class)->only(['index','show']);
-        Route::resource('coupons',         Admin\CouponController::class);
 
         Route::get('auction-interest',     [Admin\AuctionInterestController::class, 'index'])->name('auction-interest.index');
         Route::get('personal-shopper',     [Admin\PersonalShopperController::class, 'index'])->name('personal-shopper.index');
         Route::patch('personal-shopper/{id}', [Admin\PersonalShopperController::class, 'updateStatus'])->name('personal-shopper.status');
 
-        Route::get('reports',              [Admin\ReportController::class, 'index'])->name('reports.index');
-        Route::get('settings',             [Admin\SettingController::class, 'index'])->name('settings.index');
-        Route::put('settings',             [Admin\SettingController::class, 'update'])->name('settings.update');
+        Route::get('messages',             [Admin\ContactMessageController::class, 'index'])->name('messages.index');
+
+        // ─── للمدير فقط (SUPER_ADMIN / MANAGER) ───
+        Route::middleware('manager')->group(function () {
+            Route::delete('products/{product}',   [Admin\ProductController::class, 'destroy'])->name('products.destroy');
+            Route::delete('categories/{category}',[Admin\CategoryController::class, 'destroy'])->name('categories.destroy');
+            Route::resource('coupons',            Admin\CouponController::class)->only(['index', 'store', 'update', 'destroy']);
+
+            Route::get('reports',              [Admin\ReportController::class, 'index'])->name('reports.index');
+            Route::get('settings',             [Admin\SettingController::class, 'index'])->name('settings.index');
+            Route::put('settings',             [Admin\SettingController::class, 'update'])->name('settings.update');
+        });
     });
 });
