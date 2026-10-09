@@ -16,6 +16,12 @@ class User extends Authenticatable
 
     protected $hidden = ['password', 'remember_token'];
 
+    // نفس القيم الافتراضية في قاعدة البيانات — حتى تكون صحيحة قبل إعادة تحميل النموذج
+    protected $attributes = [
+        'role'      => 'CUSTOMER',
+        'is_active' => true,
+    ];
+
     protected function casts(): array
     {
         return [

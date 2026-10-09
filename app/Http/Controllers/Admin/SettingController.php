@@ -23,6 +23,7 @@ class SettingController extends Controller
             'shipping_fee', 'free_shipping_min', 'delivery_days_min',
             'delivery_days_max', 'vat_percent', 'vat_enabled',
             'personal_shopper_enabled', 'auction_enabled',
+            'bank_name', 'bank_account_name', 'bank_iban',
         ];
 
         foreach ($allowed as $key) {

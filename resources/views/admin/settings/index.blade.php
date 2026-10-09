@@ -91,6 +91,30 @@
             </div>
         </div>
 
+        {{-- التحويل البنكي --}}
+        <div class="set-card">
+            <div class="set-head"><i class="fa-solid fa-building-columns fa-sm"></i> بيانات التحويل البنكي</div>
+            <div class="set-body">
+                <p style="font-size:.78rem;color:var(--muted);margin:0;">تُرسل للعميل في إيميل تأكيد الطلب عند اختياره التحويل البنكي.</p>
+                @foreach([['bank_name','اسم البنك','مصرف الراجحي'],['bank_account_name','اسم المستفيد','مؤسسة قطعة وقصة'],['bank_iban','رقم الآيبان','SA00 0000 0000 0000 0000 0000']] as [$key,$label,$ph])
+                    <div class="set-field">
+                        <label>{{ $label }}</label>
+                        <input type="text" name="{{ $key }}" class="set-input"
+                            value="{{ $settings[$key] ?? '' }}" placeholder="{{ $ph }}" {!! $key === 'bank_iban' ? 'dir="ltr"' : '' !!}>
+                    </div>
+                @endforeach
+                <div style="font-size:.78rem;color:var(--muted);border-top:1px solid var(--border);padding-top:.75rem;">
+                    <i class="fa-solid fa-credit-card" style="color:var(--gold);"></i>
+                    الدفع الإلكتروني (Moyasar):
+                    @if(\App\Services\MoyasarGateway::enabled())
+                        <strong style="color:#166534;">مفعّل</strong>
+                    @else
+                        <strong style="color:#991B1B;">غير مفعّل</strong> — أضف <code>MOYASAR_SECRET_KEY</code> في ملف .env
+                    @endif
+                </div>
+            </div>
+        </div>
+
         {{-- السوشيال --}}
         <div class="set-card">
             <div class="set-head"><i class="fa-solid fa-share-nodes fa-sm"></i> وسائل التواصل الاجتماعي</div>

@@ -13,6 +13,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\Admin;
 
@@ -103,7 +104,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout',         [OrderController::class, 'checkout'])->name('checkout');
     Route::post('/checkout',        [OrderController::class, 'placeOrder'])->name('order.place');
     Route::post('/coupon/validate', [OrderController::class, 'validateCoupon'])->name('coupon.validate');
+
+    // ─── الدفع الإلكتروني (Moyasar) ───
+    Route::get('/orders/{order}/pay',    [PaymentController::class, 'pay'])->name('payments.pay');
+    Route::get('/orders/{order}/paid',   [PaymentController::class, 'return'])->name('payments.return');
 });
+
+// إشعار Moyasar — بدون تسجيل دخول وبدون CSRF (معفى في bootstrap/app.php)
+Route::post('/payments/moyasar/callback', [PaymentController::class, 'callback'])
+    ->name('payments.callback')
+    ->middleware('throttle:60,1');
 
 /*
 |─────────────────────────────────────────────────────────────────────────────

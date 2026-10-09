@@ -7,9 +7,12 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\MoyasarGateway;
+use App\Services\OrderNotifier;
 use App\Services\OrderTotals;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
@@ -32,9 +35,18 @@ class OrderController extends Controller
         $addresses = auth()->user()->addresses()->orderByDesc('is_default')->get();
 
         return view('checkout.index', [
-            'cartItems' => $cartItems,
-            'addresses' => $addresses,
+            'cartItems'     => $cartItems,
+            'addresses'     => $addresses,
+            'onlinePayment' => MoyasarGateway::enabled(),
         ] + OrderTotals::calculate($cartItems));
+    }
+
+    /** الدفع الإلكتروني متاح فقط عند ضبط مفاتيح Moyasar */
+    private function availablePaymentMethods(): array
+    {
+        return MoyasarGateway::enabled()
+            ? ['cod', 'bank_transfer', 'online']
+            : ['cod', 'bank_transfer'];
     }
 
     // ══════════════════════════════════════════
@@ -44,7 +56,7 @@ class OrderController extends Controller
     {
         $request->validate([
             'address_id'     => ['required', 'exists:addresses,id'],
-            'payment_method' => ['required', 'in:cod,bank_transfer'],
+            'payment_method' => ['required', Rule::in($this->availablePaymentMethods())],
             'coupon_code'    => ['nullable', 'string'],
             'notes'          => ['nullable', 'string', 'max:500'],
         ], [
@@ -105,6 +117,7 @@ class OrderController extends Controller
                     'total'          => $totals['total'],
                     'coupon_id'      => $coupon?->id,
                     'payment_method' => $request->payment_method,
+                    'payment_status' => 'unpaid',
                     'notes'          => $request->notes,
                 ]);
 
@@ -132,6 +145,13 @@ class OrderController extends Controller
             report($e);
             return back()->with('error', 'حدث خطأ أثناء تأكيد الطلب. حاول مرة أخرى.');
         }
+
+        // الدفع الإلكتروني → صفحة الدفع لدى Moyasar (الإيميلات تُرسل بعد نجاح الدفع)
+        if ($order->payment_method === 'online') {
+            return redirect()->route('payments.pay', $order);
+        }
+
+        OrderNotifier::placed($order);
 
         return redirect()->route('account.orders')
             ->with('success', "تم تأكيد طلبك بنجاح! رقم الطلب: {$order->order_number}");

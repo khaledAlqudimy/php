@@ -36,6 +36,11 @@ class SettingSeeder extends Seeder
             'vat_percent'        => '15',
             'vat_enabled'        => '1',
 
+            // ─── التحويل البنكي (تظهر في إيميل تأكيد الطلب) ───
+            'bank_name'          => '',
+            'bank_account_name'  => '',
+            'bank_iban'          => '',
+
             // ─── الباحث الشخصي ───
             'personal_shopper_enabled' => '1',
             'auction_enabled'          => '1',

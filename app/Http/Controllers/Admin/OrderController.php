@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\OrderNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -40,23 +41,14 @@ class OrderController extends Controller
             'status' => ['required', 'in:PENDING,PROCESSING,SHIPPED,DELIVERED,CANCELLED,REFUNDED'],
         ]);
 
-        // إلغاء/استرجاع الطلب يعيد القطع للمخزون، وإعادة تفعيله يحجزها من جديد
-        $closed     = ['CANCELLED', 'REFUNDED'];
-        $wasClosed  = in_array($order->status, $closed);
-        $willClose  = in_array($request->status, $closed);
+        $oldStatus = $order->status;
 
-        DB::transaction(function () use ($order, $request, $wasClosed, $willClose) {
-            if ($wasClosed !== $willClose) {
-                foreach ($order->items()->with('product')->get() as $item) {
-                    if (! $item->product) continue;
-                    $willClose
-                        ? $item->product->increment('stock', $item->quantity)
-                        : $item->product->decrement('stock', $item->quantity);
-                }
-            }
+        // الإلغاء/الاسترجاع يعيد القطع للمخزون، وإعادة التفعيل يحجزها من جديد
+        DB::transaction(fn () => $order->changeStatus($request->status));
 
-            $order->update(['status' => $request->status]);
-        });
+        if ($oldStatus !== $order->status) {
+            OrderNotifier::statusChanged($order);
+        }
 
         return back()->with('success', "تم تحديث حالة الطلب إلى: {$order->statusLabel()}");
     }
