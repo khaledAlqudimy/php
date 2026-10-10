@@ -72,7 +72,7 @@
         </div>
 
         {{-- مجموعات خاصة --}}
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+        <div class="stack-md" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
             <a href="{{ route('shop', ['rare' => 1]) }}"
                style="background:linear-gradient(135deg,#4C1D95,#7C3AED);border-radius:var(--radius-lg);padding:2.5rem;text-decoration:none;position:relative;overflow:hidden;transition:transform .25s;"
                onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">

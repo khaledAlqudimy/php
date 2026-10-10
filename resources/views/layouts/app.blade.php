@@ -196,6 +196,11 @@
 
         .btn-outline:hover { background: var(--color-gold); color: var(--color-brown); }
 
+        /* تخطيطات الأعمدة تنزل تحت بعض على الجوال */
+        @media (max-width: 768px) {
+            .stack-md { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+        }
+
         /* ═══ زر واتساب عائم ═══ */
         .wa-float {
             position: fixed;
@@ -210,6 +215,9 @@
             z-index: 90;
         }
         .wa-float:hover { transform: scale(1.08); color: #fff; }
+        @media (max-width: 768px) {
+            .wa-float { width: 46px; height: 46px; font-size: 1.45rem; bottom: .9rem; left: .9rem; opacity: .92; }
+        }
 
     </style>
 
@@ -242,7 +250,8 @@
 </main>
 
 {{-- ═══ زر واتساب عائم ═══ --}}
-@if($floatingWa = \App\Models\Setting::whatsappLink('السلام عليكم، لدي استفسار عن قطعة في قطعة وقصة'))
+@if(! request()->routeIs('cart.*', 'checkout', 'account.*', 'login', 'register', 'password.*')
+    && ($floatingWa = \App\Models\Setting::whatsappLink('السلام عليكم، لدي استفسار عن قطعة في قطعة وقصة')))
     <a href="{{ $floatingWa }}" class="wa-float" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب">
         <i class="fa-brands fa-whatsapp"></i>
     </a>

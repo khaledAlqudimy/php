@@ -129,7 +129,7 @@
 
 /* Price Block */
 .price-block {
-    display: flex; align-items: center; gap: 1rem;
+    display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1rem;
     margin-bottom: 1.5rem;
     padding: 1.25rem;
     background: var(--color-bg);
@@ -137,12 +137,13 @@
     border: 1px solid var(--color-border);
 }
 
-.price-main { font-size: 2rem; font-weight: 700; color: var(--color-brown); }
-.price-was  { font-size: 1rem; text-decoration: line-through; color: var(--color-text-muted); }
+.price-main { font-size: 2rem; font-weight: 700; color: var(--color-brown); white-space: nowrap; }
+.price-was  { font-size: 1rem; text-decoration: line-through; color: var(--color-text-muted); white-space: nowrap; }
+@media (max-width: 480px) { .price-main { font-size: 1.6rem; } }
 .price-discount {
     background: #DC2626; color: #fff;
     font-size: .75rem; font-weight: 700;
-    padding: .2rem .6rem; border-radius: 100px;
+    padding: .2rem .6rem; border-radius: 100px; white-space: nowrap;
 }
 
 /* Meta Tags */
@@ -472,9 +473,16 @@
                             {{ $inWishlist ? 'في المفضلة' : 'أضف للمفضلة' }}
                         </button>
                     @else
-                        <a href="{{ route('login') }}" class="btn-add-cart">
-                            <i class="fa-solid fa-right-to-bracket fa-sm"></i> سجّل دخولك للشراء
-                        </a>
+                        @if($product->stock > 0)
+                            {{-- بعد الدخول يعود الزائر لنفس القطعة --}}
+                            <a href="{{ route('login', ['redirect' => request()->getRequestUri()]) }}" class="btn-add-cart">
+                                <i class="fa-solid fa-right-to-bracket fa-sm"></i> سجّل دخولك للشراء
+                            </a>
+                        @else
+                            <a href="{{ route('personal-shopper.index') }}" class="btn-add-cart">
+                                <i class="fa-solid fa-magnifying-glass fa-sm"></i> اطلب قطعة مشابهة
+                            </a>
+                        @endif
                     @endauth
                 </div>
 

@@ -17,7 +17,7 @@
             @endforeach
         </nav>
 
-        <div style="display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start;">
+        <div class="stack-md" style="display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start;">
 
             {{-- العناوين المحفوظة --}}
             <div>

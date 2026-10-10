@@ -464,7 +464,7 @@
         {{-- معاينة المنتج --}}
         <div class="modal-product-preview">
             <div class="modal-product-img">
-                <img id="modalProductImg" src="" alt="" style="display:none;">
+                <img id="modalProductImg" alt="" style="display:none;">
             </div>
             <div>
                 <div class="modal-product-name" id="modalProductName"></div>

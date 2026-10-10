@@ -14,7 +14,7 @@
 
 <div style="padding:5rem 0;">
     <div class="container">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;margin-bottom:5rem;">
+        <div class="stack-md" style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;margin-bottom:5rem;">
             <div>
                 <span style="display:inline-block;color:var(--color-gold);font-size:.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:.75rem;">رؤيتنا</span>
                 <h2 style="font-size:1.75rem;font-weight:700;color:var(--color-brown);margin-bottom:1.25rem;line-height:1.3;">معرض أنتيك فاخر يجمع بين الأصالة والرقي</h2>
