@@ -158,6 +158,25 @@ class ProductController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /**
+     * جعل الصورة رئيسية (تظهر أولاً في المتجر وبطاقة المنتج)
+     */
+    public function makeMainImage(int $id)
+    {
+        $image  = ProductImage::findOrFail($id);
+        $others = ProductImage::where('product_id', $image->product_id)
+            ->where('id', '!=', $image->id)
+            ->orderBy('order')
+            ->pluck('id');
+
+        $image->update(['order' => 0]);
+        foreach ($others as $i => $otherId) {
+            ProductImage::whereKey($otherId)->update(['order' => $i + 1]);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     // ─── Helpers ───
     private function uniqueSlug(string $base): string
     {

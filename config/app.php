@@ -8,7 +8,7 @@ return [
     'url'   => env('APP_URL', 'http://localhost'),
 
     'locale'          => 'ar',
-    'fallback_locale' => 'ar',
+    'fallback_locale' => 'en',
     'faker_locale'    => 'ar_SA',
 
     'timezone' => 'Asia/Riyadh',

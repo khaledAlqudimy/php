@@ -135,6 +135,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::resource('products',        Admin\ProductController::class)->except(['show', 'destroy']);
         Route::delete('products/images/{id}', [Admin\ProductController::class, 'deleteImage'])->name('products.images.destroy');
+        Route::patch('products/images/{id}/main', [Admin\ProductController::class, 'makeMainImage'])->name('products.images.main');
 
         Route::resource('categories',      Admin\CategoryController::class)->only(['index', 'store', 'update']);
         Route::resource('orders',          Admin\OrderController::class)->only(['index','show','update']);
