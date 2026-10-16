@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'الباحث الشخصي')
+@section('meta_description', 'خدمة الباحث الشخصي: أخبرنا بالقطعة التي تبحث عنها وفريقنا يجدها لك من مصادر موثوقة حول العالم.')
 
 @push('styles')
 <style>
@@ -431,8 +432,8 @@
                 </div>
 
                 {{-- تواصل --}}
-                @php $whatsapp = \App\Models\Setting::get('site_whatsapp'); @endphp
-                @if($whatsapp)
+                @php $waLink = \App\Models\Setting::whatsappLink(); @endphp
+                @if($waLink)
                     <div class="info-card" style="background:linear-gradient(135deg,#0a4c2e,#166534);border-color:#166534;">
                         <div style="color:#fff;font-weight:700;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem;">
                             <i class="fa-brands fa-whatsapp fa-lg" style="color:#4ade80;"></i>
@@ -441,7 +442,7 @@
                         <p style="color:rgba(255,255,255,.75);font-size:.85rem;margin-bottom:1rem;line-height:1.6;">
                             لديك استفسار عاجل؟ تواصل معنا مباشرة عبر واتساب
                         </p>
-                        <a href="https://wa.me/{{ preg_replace('/\D/', '', $whatsapp) }}"
+                        <a href="{{ $waLink }}"
                            target="_blank"
                            style="display:flex;align-items:center;justify-content:center;gap:.5rem;background:#25D366;color:#fff;border-radius:var(--radius);padding:.7rem 1rem;font-weight:700;font-size:.9rem;text-decoration:none;transition:var(--transition);">
                             <i class="fa-brands fa-whatsapp fa-sm"></i> فتح واتساب

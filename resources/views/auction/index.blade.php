@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'المزادات')
+@section('meta_description', 'مزادات قطعة وقصة الحصرية على القطع النادرة — سجّل اهتمامك وحدد ميزانيتك قبل موعد المزاد.')
 
 @push('styles')
 <style>
@@ -463,7 +464,7 @@
         {{-- معاينة المنتج --}}
         <div class="modal-product-preview">
             <div class="modal-product-img">
-                <img id="modalProductImg" src="" alt="" style="display:none;">
+                <img id="modalProductImg" alt="" style="display:none;">
             </div>
             <div>
                 <div class="modal-product-name" id="modalProductName"></div>

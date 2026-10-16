@@ -24,6 +24,13 @@ class IsAdmin
             abort(403, 'غير مصرح لك بالوصول للوحة الإدارة.');
         }
 
+        // حساب موقوف → إخراجه فوراً حتى لو كانت جلسته مفتوحة
+        if (! Auth::user()->is_active) {
+            Auth::logout();
+            return redirect()->route('admin.login')
+                ->with('error', 'هذا الحساب موقوف.');
+        }
+
         return $next($request);
     }
 }

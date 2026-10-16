@@ -1,0 +1,6 @@
+# عند تعذّر تغيير Document Root إلى مجلد public على Hostinger:
+# تحويل كل الطلبات إلى public/ (يمنع أيضاً الوصول المباشر لملف .env وبقية ملفات المشروع)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

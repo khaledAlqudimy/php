@@ -80,7 +80,7 @@
         </div>
 
         {{-- بيانات العميل --}}
-        @php $infoItems = [['fa-user','العميل',$order->user?->name],['fa-envelope','البريد',$order->user?->email],['fa-phone','الهاتف',$order->user?->phone],['fa-location-dot','العنوان',$order->address ? "{$order->address->city}، {$order->address->country}" : null],['fa-credit-card','الدفع',['cod'=>'الاستلام','bank_transfer'=>'تحويل'][$order->payment_method] ?? $order->payment_method]]; @endphp
+        @php $infoItems = [['fa-user','العميل',$order->user?->name],['fa-envelope','البريد',$order->user?->email],['fa-phone','الهاتف',$order->user?->phone],['fa-location-dot','العنوان',$order->address ? "{$order->address->city}، {$order->address->country}" : null],['fa-credit-card','الدفع',$order->paymentLabel() . ' — ' . $order->paymentStatusLabel()],['fa-hashtag','مرجع الدفع',$order->payment_reference],['fa-calendar-check','تاريخ الدفع',$order->paid_at?->format('d/m/Y H:i')]]; @endphp
         <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
             <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);font-weight:700;font-size:.875rem;color:var(--brown);">بيانات الطلب</div>
             <div style="padding:1.25rem;display:flex;flex-direction:column;gap:.75rem;">

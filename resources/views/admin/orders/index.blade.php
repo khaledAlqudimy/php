@@ -42,7 +42,10 @@
                     <td style="padding:.875rem 1rem;color:var(--muted);font-size:.825rem;">{{ $order->items->count() }} قطعة</td>
                     <td style="padding:.875rem 1rem;font-weight:700;color:var(--brown);">{{ number_format($order->total,0) }} ر.س</td>
                     <td style="padding:.875rem 1rem;font-size:.8rem;color:var(--muted);">
-                        {{ ['cod'=>'الاستلام','bank_transfer'=>'تحويل','online'=>'أونلاين'][$order->payment_method] ?? $order->payment_method }}
+                        {{ ['cod'=>'الاستلام','bank_transfer'=>'تحويل','online'=>'إلكتروني'][$order->payment_method] ?? $order->payment_method }}
+                        @if($order->payment_status === 'paid')
+                            <span style="color:#166534;font-weight:700;">✓</span>
+                        @endif
                     </td>
                     <td style="padding:.875rem 1rem;">
                         <span class="status-pill pill-{{ $order->status }}">{{ $order->statusLabel() }}</span>

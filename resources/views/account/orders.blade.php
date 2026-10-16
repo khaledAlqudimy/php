@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'طلباتي')
+@section('noindex', true)
 
 @push('styles')
 <style>
@@ -207,11 +208,17 @@
                                 @endif
                                 <div style="font-size:.78rem;color:var(--color-text-muted);margin-top:.2rem;">
                                     <i class="fa-solid fa-credit-card fa-xs"></i>
-                                    @php
-                                        $payLabels = ['cod'=>'الدفع عند الاستلام','bank_transfer'=>'تحويل بنكي','online'=>'بطاقة ائتمانية'];
-                                    @endphp
-                                    {{ $payLabels[$order->payment_method] ?? $order->payment_method }}
+                                    {{ $order->paymentLabel() }}
+                                    @if($order->payment_status === 'paid')
+                                        <span style="color:#166534;font-weight:600;">— مدفوع</span>
+                                    @endif
                                 </div>
+                                @if($order->isAwaitingOnlinePayment())
+                                    <a href="{{ route('payments.pay', $order) }}" class="btn btn-primary" style="margin-top:.6rem;font-size:.8rem;padding:.45rem 1rem;">
+                                        <i class="fa-solid fa-lock fa-xs"></i> ادفع الآن
+                                    </a>
+                                    <div style="font-size:.72rem;color:#92400E;margin-top:.3rem;">القطع محجوزة لك مؤقتاً — أكمل الدفع حتى لا يُلغى الطلب</div>
+                                @endif
                             </div>
                             <div style="text-align:left;">
                                 <div class="order-total-label">الإجمالي</div>

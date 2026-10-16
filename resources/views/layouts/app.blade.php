@@ -6,6 +6,37 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'قطعة وقصة') — معرض الأنتيك الفاخر</title>
 
+    {{-- ═══ SEO ═══ --}}
+    @php
+        // yieldContent يُرجع نصاً مُهرّباً مسبقاً → نفك التهريب حتى لا يتكرر مع {{ }}
+        $decode          = fn ($v) => trim(html_entity_decode($v, ENT_QUOTES, 'UTF-8'));
+        $metaTitle       = $decode($__env->yieldContent('title', 'قطعة وقصة')) . ' — معرض الأنتيك الفاخر';
+        $metaDescription = $decode($__env->yieldContent('meta_description'))
+            ?: 'قطعة وقصة — معرض أنتيك فاخر في السعودية: قطع أثرية أصيلة ونادرة من الأثاث الكلاسيكي والساعات والتحف، لكل قطعة قصة موثّقة.';
+        $metaImage       = $decode($__env->yieldContent('og_image'));
+    @endphp
+    <meta name="description" content="{{ $metaDescription }}">
+    <link rel="canonical" href="{{ url()->current() }}">
+    @hasSection('noindex')
+        <meta name="robots" content="noindex, nofollow">
+    @endif
+    <meta name="theme-color" content="#3A2418">
+
+    <meta property="og:site_name" content="قطعة وقصة">
+    <meta property="og:locale" content="ar_SA">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:title" content="{{ $metaTitle }}">
+    <meta property="og:description" content="{{ $metaDescription }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @if($metaImage)
+        <meta property="og:image" content="{{ $metaImage }}">
+    @endif
+    <meta name="twitter:card" content="{{ $metaImage ? 'summary_large_image' : 'summary' }}">
+
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+
+    @stack('head')
+
     {{-- خطوط Google --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,73 +85,6 @@
 
         a { color: inherit; text-decoration: none; transition: var(--transition); }
         img { max-width: 100%; display: block; }
-
-        /* ═══ Header ═══ */
-        .site-header {
-            background: var(--color-brown);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: var(--shadow-md);
-        }
-
-        .header-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-            height: 72px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .site-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--color-gold);
-            letter-spacing: -.5px;
-        }
-
-        .site-logo span { color: var(--color-white); }
-
-        .header-nav { display: flex; gap: .25rem; }
-
-        .header-nav a {
-            color: rgba(255,255,255,.85);
-            font-size: .9rem;
-            padding: .5rem .75rem;
-            border-radius: var(--radius);
-            font-weight: 500;
-        }
-
-        .header-nav a:hover,
-        .header-nav a.active { color: var(--color-gold); }
-
-        .header-actions { display: flex; align-items: center; gap: .75rem; }
-
-        .header-icon {
-            position: relative;
-            color: rgba(255,255,255,.85);
-            font-size: 1.1rem;
-            padding: .5rem;
-            border-radius: 50%;
-            transition: var(--transition);
-        }
-
-        .header-icon:hover { color: var(--color-gold); background: rgba(255,255,255,.1); }
-
-        .badge {
-            position: absolute;
-            top: 0; right: 0;
-            background: var(--color-gold);
-            color: var(--color-brown);
-            font-size: .65rem;
-            font-weight: 700;
-            width: 18px; height: 18px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-        }
 
         /* ═══ Flash Messages ═══ */
         .flash-container {
@@ -232,64 +196,37 @@
 
         .btn-outline:hover { background: var(--color-gold); color: var(--color-brown); }
 
-        /* Mobile */
-        .menu-toggle { display: none; background: none; border: none; cursor: pointer; }
-
+        /* تخطيطات الأعمدة تنزل تحت بعض على الجوال */
         @media (max-width: 768px) {
-            .header-nav { display: none; }
-            .menu-toggle { display: block; color: #fff; font-size: 1.3rem; }
+            .stack-md { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
         }
+
+        /* ═══ زر واتساب عائم ═══ */
+        .wa-float {
+            position: fixed;
+            bottom: 1.25rem; left: 1.25rem;
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: #25D366;
+            color: #fff;
+            font-size: 1.75rem;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,.25);
+            z-index: 90;
+        }
+        .wa-float:hover { transform: scale(1.08); color: #fff; }
+        @media (max-width: 768px) {
+            .wa-float { width: 46px; height: 46px; font-size: 1.45rem; bottom: .9rem; left: .9rem; opacity: .92; }
+        }
+
     </style>
 
     @stack('styles')
 </head>
 <body>
 
-{{-- ═══ Header ═══ --}}
-<header class="site-header">
-    <div class="header-inner">
-        <a href="{{ route('home') }}" class="site-logo">
-            قطعة <span>وقصة</span>
-        </a>
-
-        <nav class="header-nav">
-            <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">الرئيسية</a>
-            <a href="{{ route('shop') }}" class="{{ request()->routeIs('shop*') ? 'active' : '' }}">المتجر</a>
-            <a href="{{ route('auction.index') }}" class="{{ request()->routeIs('auction*') ? 'active' : '' }}">المزادات</a>
-            <a href="{{ route('personal-shopper.index') }}" class="{{ request()->routeIs('personal-shopper*') ? 'active' : '' }}">الباحث الشخصي</a>
-            <a href="{{ route('blog.index') }}" class="{{ request()->routeIs('blog*') ? 'active' : '' }}">المدونة</a>
-        </nav>
-
-        <div class="header-actions">
-            @auth
-                <a href="{{ route('account.wishlist') }}" class="header-icon" title="المفضلة">
-                    <i class="fa-regular fa-heart"></i>
-                </a>
-                <a href="{{ route('cart.index') }}" class="header-icon" title="السلة">
-                    <i class="fa-solid fa-bag-shopping"></i>
-                    @php $cartCount = auth()->user()->cartItems()->count() @endphp
-                    @if($cartCount > 0)
-                        <span class="badge">{{ $cartCount }}</span>
-                    @endif
-                </a>
-                <a href="{{ route('account.profile') }}" class="header-icon" title="حسابي">
-                    <i class="fa-regular fa-circle-user"></i>
-                </a>
-            @else
-                <a href="{{ route('login') }}" class="btn btn-outline" style="font-size:.85rem;padding:.5rem 1rem;">
-                    دخول
-                </a>
-                <a href="{{ route('register') }}" class="btn btn-primary" style="font-size:.85rem;padding:.5rem 1rem;">
-                    تسجيل
-                </a>
-            @endauth
-
-            <button class="menu-toggle" id="menuToggle">
-                <i class="fa-solid fa-bars" style="color:#fff;font-size:1.2rem;"></i>
-            </button>
-        </div>
-    </div>
-</header>
+{{-- ═══ Header + القائمة الرئيسية ═══ --}}
+@include('layouts.partials.header')
 
 {{-- ═══ Flash Messages ═══ --}}
 <div class="flash-container" id="flashContainer">
@@ -311,6 +248,14 @@
 <main class="main-content">
     @yield('content')
 </main>
+
+{{-- ═══ زر واتساب عائم ═══ --}}
+@if(! request()->routeIs('cart.*', 'checkout', 'account.*', 'login', 'register', 'password.*')
+    && ($floatingWa = \App\Models\Setting::whatsappLink('السلام عليكم، لدي استفسار عن قطعة في قطعة وقصة')))
+    <a href="{{ $floatingWa }}" class="wa-float" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+@endif
 
 {{-- ═══ Footer ═══ --}}
 <footer class="site-footer">
@@ -336,14 +281,20 @@
         <div class="footer-col">
             <h4>تواصل معنا</h4>
             <a href="{{ route('contact') }}">اتصل بنا</a>
-            @php $phone = \App\Models\Setting::get('site_whatsapp') @endphp
-            @if($phone)
-                <a href="https://wa.me/{{ $phone }}">واتساب</a>
+            @if($waLink = \App\Models\Setting::whatsappLink())
+                <a href="{{ $waLink }}" target="_blank" rel="noopener">واتساب</a>
+            @endif
+            @if($sitePhone = \App\Models\Setting::contact('site_phone'))
+                <a href="tel:{{ preg_replace('/[^\d+]/', '', $sitePhone) }}" dir="ltr" style="text-align:right;">{{ $sitePhone }}</a>
             @endif
         </div>
     </div>
     <div class="footer-bottom">
         © {{ date('Y') }} قطعة وقصة — جميع الحقوق محفوظة
+        <span style="margin:0 .5rem;opacity:.5;">|</span>
+        <a href="{{ route('privacy') }}">سياسة الخصوصية</a>
+        <span style="margin:0 .5rem;opacity:.5;">|</span>
+        <a href="{{ route('terms') }}">الشروط والأحكام</a>
     </div>
 </footer>
 

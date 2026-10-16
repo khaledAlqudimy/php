@@ -16,6 +16,12 @@ class User extends Authenticatable
 
     protected $hidden = ['password', 'remember_token'];
 
+    // نفس القيم الافتراضية في قاعدة البيانات — حتى تكون صحيحة قبل إعادة تحميل النموذج
+    protected $attributes = [
+        'role'      => 'CUSTOMER',
+        'is_active' => true,
+    ];
+
     protected function casts(): array
     {
         return [
@@ -28,6 +34,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return in_array($this->role, ['SUPER_ADMIN', 'MANAGER', 'STAFF']);
+    }
+
+    public function isManager(): bool
+    {
+        return in_array($this->role, ['SUPER_ADMIN', 'MANAGER']);
     }
 
     public function isSuperAdmin(): bool

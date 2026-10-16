@@ -11,7 +11,13 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         $email    = env('ADMIN_EMAIL',    'admin@qet3a-w-qesa.sa');
-        $password = env('ADMIN_PASSWORD', 'Admin@12345');
+        $password = env('ADMIN_PASSWORD');
+
+        // لا توجد كلمة مرور افتراضية — كلمة مرور معروفة تعني لوحة إدارة مكشوفة
+        if (blank($password) || strlen($password) < 10) {
+            $this->command->error('❌ ضع ADMIN_PASSWORD في ملف .env (10 أحرف على الأقل) ثم أعد التشغيل.');
+            return;
+        }
 
         // إذا كان المدير موجوداً لا نكرره
         if (User::where('email', $email)->exists()) {

@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'المدونة')
+@section('meta_description', 'مدونة قطعة وقصة: أدلة اقتناء الأنتيك، تاريخ الطُرز الكلاسيكية، ونصائح العناية بالقطع الأثرية.')
 
 @push('styles')
 <style>

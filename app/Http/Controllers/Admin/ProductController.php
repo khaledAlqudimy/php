@@ -17,8 +17,10 @@ class ProductController extends Controller
         $query = Product::with(['category', 'images'])->latest();
 
         if ($s = $request->get('q')) {
-            $query->where('title', 'like', "%{$s}%")
+            $query->where(function ($q) use ($s) {
+                $q->where('title', 'like', "%{$s}%")
                   ->orWhere('sku', 'like', "%{$s}%");
+            });
         }
 
         if ($cat = $request->get('category')) {
@@ -152,6 +154,25 @@ class ProductController extends Controller
         $image = ProductImage::findOrFail($id);
         Storage::disk('public')->delete($image->url);
         $image->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * جعل الصورة رئيسية (تظهر أولاً في المتجر وبطاقة المنتج)
+     */
+    public function makeMainImage(int $id)
+    {
+        $image  = ProductImage::findOrFail($id);
+        $others = ProductImage::where('product_id', $image->product_id)
+            ->where('id', '!=', $image->id)
+            ->orderBy('order')
+            ->pluck('id');
+
+        $image->update(['order' => 0]);
+        foreach ($others as $i => $otherId) {
+            ProductImage::whereKey($otherId)->update(['order' => $i + 1]);
+        }
 
         return response()->json(['success' => true]);
     }

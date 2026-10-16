@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'الرئيسية')
+@section('meta_description', 'قطعة وقصة — معرض أنتيك فاخر في السعودية. اكتشف قطعاً أثرية أصيلة ونادرة من الأثاث الكلاسيكي والساعات والتحف والفضيات، لكل قطعة قصة.')
 
 @push('styles')
 <style>
@@ -323,16 +324,16 @@
     z-index: 2;
 }
 
-.badge {
+.pc-badge {
     display: inline-flex; align-items: center; gap: .25rem;
     padding: .2rem .6rem;
     border-radius: 100px;
     font-size: .7rem; font-weight: 700;
 }
 
-.badge--rare    { background: #7C3AED; color: #fff; }
-.badge--featured { background: var(--color-gold); color: var(--color-brown); }
-.badge--sale    { background: #DC2626; color: #fff; }
+.pc-badge--rare    { background: #7C3AED; color: #fff; }
+.pc-badge--featured { background: var(--color-gold); color: var(--color-brown); }
+.pc-badge--sale    { background: #DC2626; color: #fff; }
 
 .wishlist-btn {
     position: absolute; top: .75rem; left: .75rem;

@@ -117,6 +117,7 @@
                             <a href="{{ route('admin.products.edit', $product) }}" class="btn-a btn-edit">
                                 <i class="fa-solid fa-pen fa-xs"></i>
                             </a>
+                            @if(auth()->user()->isManager())
                             <form action="{{ route('admin.products.destroy', $product) }}" method="POST"
                                   onsubmit="return confirm('هل أنت متأكد من حذف هذا المنتج؟')">
                                 @csrf @method('DELETE')
@@ -124,6 +125,7 @@
                                     <i class="fa-solid fa-trash-can fa-xs"></i>
                                 </button>
                             </form>
+                            @endif
                         </div>
                     </td>
                 </tr>

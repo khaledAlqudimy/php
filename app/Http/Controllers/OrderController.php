@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CartItem;
+use App\Exceptions\CheckoutException;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Setting;
+use App\Models\Product;
+use App\Services\MoyasarGateway;
+use App\Services\OrderNotifier;
+use App\Services\OrderTotals;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
@@ -28,22 +32,21 @@ class OrderController extends Controller
                 ->with('error', 'سلتك فارغة. أضف قطعاً قبل إتمام الطلب.');
         }
 
-        $addresses   = auth()->user()->addresses()->orderByDesc('is_default')->get();
-        $subtotal    = $cartItems->sum(fn($i) => $i->product->price * $i->quantity);
-        $shippingFee = (float) Setting::get('shipping_fee', 30);
-        $freeMin     = (float) Setting::get('free_shipping_min', 500);
-        $vatPercent  = (float) Setting::get('vat_percent', 15);
-        $vatEnabled  = (bool)  Setting::get('vat_enabled', 1);
+        $addresses = auth()->user()->addresses()->orderByDesc('is_default')->get();
 
-        if ($subtotal >= $freeMin) $shippingFee = 0;
-        $taxAmount = $vatEnabled ? round($subtotal * ($vatPercent / 100), 2) : 0;
-        $total     = $subtotal + $shippingFee + $taxAmount;
+        return view('checkout.index', [
+            'cartItems'     => $cartItems,
+            'addresses'     => $addresses,
+            'onlinePayment' => MoyasarGateway::enabled(),
+        ] + OrderTotals::calculate($cartItems));
+    }
 
-        return view('checkout.index', compact(
-            'cartItems', 'addresses', 'subtotal',
-            'shippingFee', 'taxAmount', 'vatPercent',
-            'vatEnabled', 'freeMin', 'total'
-        ));
+    /** الدفع الإلكتروني متاح فقط عند ضبط مفاتيح Moyasar */
+    private function availablePaymentMethods(): array
+    {
+        return MoyasarGateway::enabled()
+            ? ['cod', 'bank_transfer', 'online']
+            : ['cod', 'bank_transfer'];
     }
 
     // ══════════════════════════════════════════
@@ -53,7 +56,7 @@ class OrderController extends Controller
     {
         $request->validate([
             'address_id'     => ['required', 'exists:addresses,id'],
-            'payment_method' => ['required', 'in:cod,bank_transfer,online'],
+            'payment_method' => ['required', Rule::in($this->availablePaymentMethods())],
             'coupon_code'    => ['nullable', 'string'],
             'notes'          => ['nullable', 'string', 'max:500'],
         ], [
@@ -64,84 +67,91 @@ class OrderController extends Controller
         // تحقق أن العنوان يخص المستخدم
         $address = auth()->user()->addresses()->findOrFail($request->address_id);
 
-        $cartItems = auth()->user()
-            ->cartItems()
-            ->with('product')
-            ->get();
-
-        if ($cartItems->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'السلة فارغة.');
-        }
-
-        // ─── حساب الإجماليات ───
-        $subtotal    = $cartItems->sum(fn($i) => $i->product->price * $i->quantity);
-        $shippingFee = (float) Setting::get('shipping_fee', 30);
-        $freeMin     = (float) Setting::get('free_shipping_min', 500);
-        $vatPercent  = (float) Setting::get('vat_percent', 15);
-        $vatEnabled  = (bool)  Setting::get('vat_enabled', 1);
-
-        if ($subtotal >= $freeMin) $shippingFee = 0;
-        $taxAmount = $vatEnabled ? round($subtotal * ($vatPercent / 100), 2) : 0;
-
-        // ─── تطبيق الكوبون ───
-        $discount = 0;
-        $coupon   = null;
-
-        if ($request->filled('coupon_code')) {
-            $coupon = Coupon::where('code', strtoupper(trim($request->coupon_code)))->first();
-
-            if ($coupon && $coupon->isValid($subtotal)) {
-                $discount = $coupon->calculateDiscount($subtotal);
-            }
-        }
-
-        $total = $subtotal + $shippingFee + $taxAmount - $discount;
-
-        // ─── إنشاء الطلب داخل Transaction ───
-        DB::beginTransaction();
+        // ─── إنشاء الطلب داخل Transaction مع قفل صفوف المنتجات ───
+        // القفل يمنع بيع نفس القطعة لعميلين في نفس اللحظة
         try {
-            $order = Order::create([
-                'user_id'        => auth()->id(),
-                'address_id'     => $address->id,
-                'status'         => 'PENDING',
-                'subtotal'       => $subtotal,
-                'shipping_fee'   => $shippingFee,
-                'tax_amount'     => $taxAmount,
-                'discount'       => $discount,
-                'total'          => $total,
-                'coupon_id'      => $coupon?->id,
-                'payment_method' => $request->payment_method,
-                'notes'          => $request->notes,
-            ]);
+            $order = DB::transaction(function () use ($request, $address) {
+                $cartItems = auth()->user()->cartItems()->get();
 
-            // إنشاء عناصر الطلب
-            foreach ($cartItems as $item) {
-                OrderItem::create([
-                    'order_id'   => $order->id,
-                    'product_id' => $item->product_id,
-                    'title'      => $item->product->title,
-                    'price'      => $item->product->price,
-                    'quantity'   => $item->quantity,
+                if ($cartItems->isEmpty()) {
+                    throw new CheckoutException('السلة فارغة.');
+                }
+
+                $products = Product::whereIn('id', $cartItems->pluck('product_id'))
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                foreach ($cartItems as $item) {
+                    $product = $products->get($item->product_id);
+
+                    if (! $product || ! $product->is_active) {
+                        throw new CheckoutException('إحدى القطع في سلتك لم تعد متاحة. راجع السلة.');
+                    }
+                    if ($product->stock < $item->quantity) {
+                        throw new CheckoutException("القطعة «{$product->title}» لم تعد متوفرة بالكمية المطلوبة.");
+                    }
+
+                    $item->setRelation('product', $product);
+                }
+
+                // ─── الكوبون (قفل لمنع تجاوز حد الاستخدام) ───
+                $coupon = null;
+                if ($request->filled('coupon_code')) {
+                    $coupon = Coupon::where('code', strtoupper(trim($request->coupon_code)))
+                        ->lockForUpdate()
+                        ->first();
+                }
+
+                $totals = OrderTotals::calculate($cartItems, $coupon);
+                $coupon = $totals['discount'] > 0 ? $coupon : null;
+
+                $order = Order::create([
+                    'user_id'        => auth()->id(),
+                    'address_id'     => $address->id,
+                    'status'         => 'PENDING',
+                    'subtotal'       => $totals['subtotal'],
+                    'shipping_fee'   => $totals['shippingFee'],
+                    'tax_amount'     => $totals['taxAmount'],
+                    'discount'       => $totals['discount'],
+                    'total'          => $totals['total'],
+                    'coupon_id'      => $coupon?->id,
+                    'payment_method' => $request->payment_method,
+                    'payment_status' => 'unpaid',
+                    'notes'          => $request->notes,
                 ]);
 
-                // تقليل المخزون
-                $item->product->decrement('stock', $item->quantity);
-            }
+                foreach ($cartItems as $item) {
+                    OrderItem::create([
+                        'order_id'   => $order->id,
+                        'product_id' => $item->product_id,
+                        'title'      => $item->product->title,
+                        'price'      => $item->product->price,
+                        'quantity'   => $item->quantity,
+                    ]);
 
-            // زيادة عداد استخدام الكوبون
-            if ($coupon) {
-                $coupon->increment('used_count');
-            }
+                    $item->product->decrement('stock', $item->quantity);
+                }
 
-            // تفريغ السلة
-            auth()->user()->cartItems()->delete();
+                $coupon?->increment('used_count');
 
-            DB::commit();
+                auth()->user()->cartItems()->delete();
 
+                return $order;
+            });
+        } catch (CheckoutException $e) {
+            return redirect()->route('cart.index')->with('error', $e->getMessage());
         } catch (\Throwable $e) {
-            DB::rollBack();
+            report($e);
             return back()->with('error', 'حدث خطأ أثناء تأكيد الطلب. حاول مرة أخرى.');
         }
+
+        // الدفع الإلكتروني → صفحة الدفع لدى Moyasar (الإيميلات تُرسل بعد نجاح الدفع)
+        if ($order->payment_method === 'online') {
+            return redirect()->route('payments.pay', $order);
+        }
+
+        OrderNotifier::placed($order);
 
         return redirect()->route('account.orders')
             ->with('success', "تم تأكيد طلبك بنجاح! رقم الطلب: {$order->order_number}");
@@ -161,11 +171,8 @@ class OrderController extends Controller
         }
 
         // نحسب الـ subtotal من السلة الحالية
-        $subtotal = auth()->user()
-            ->cartItems()
-            ->with('product')
-            ->get()
-            ->sum(fn($i) => $i->product->price * $i->quantity);
+        $cartItems = auth()->user()->cartItems()->with('product')->get();
+        $subtotal  = $cartItems->sum(fn($i) => $i->product->price * $i->quantity);
 
         if (! $coupon->isValid($subtotal)) {
             $reason = match (true) {
@@ -178,15 +185,7 @@ class OrderController extends Controller
             return response()->json(['valid' => false, 'message' => $reason]);
         }
 
-        $discount  = $coupon->calculateDiscount($subtotal);
-        $shippingFee = (float) Setting::get('shipping_fee', 30);
-        $freeMin     = (float) Setting::get('free_shipping_min', 500);
-        $vatPercent  = (float) Setting::get('vat_percent', 15);
-        $vatEnabled  = (bool)  Setting::get('vat_enabled', 1);
-
-        if ($subtotal >= $freeMin) $shippingFee = 0;
-        $taxAmount = $vatEnabled ? round($subtotal * ($vatPercent / 100), 2) : 0;
-        $newTotal  = max(0, $subtotal + $shippingFee + $taxAmount - $discount);
+        $totals = OrderTotals::calculate($cartItems, $coupon);
 
         $label = $coupon->type === 'PERCENTAGE'
             ? "خصم {$coupon->value}%"
@@ -195,8 +194,8 @@ class OrderController extends Controller
         return response()->json([
             'valid'     => true,
             'message'   => $label,
-            'discount'  => number_format($discount, 0),
-            'new_total' => number_format($newTotal, 0),
+            'discount'  => number_format($totals['discount'], 0),
+            'new_total' => number_format($totals['total'], 0),
         ]);
     }
 }

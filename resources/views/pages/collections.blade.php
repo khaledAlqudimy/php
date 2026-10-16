@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title','المجموعات')
+@section('meta_description', 'مجموعات قطعة وقصة: تصفّح القطع الأثرية حسب الفئة والحقبة.')
 
 @section('content')
 <div style="background:var(--color-brown);padding:4rem 0 3.5rem;text-align:center;">
@@ -71,7 +72,7 @@
         </div>
 
         {{-- مجموعات خاصة --}}
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+        <div class="stack-md" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
             <a href="{{ route('shop', ['rare' => 1]) }}"
                style="background:linear-gradient(135deg,#4C1D95,#7C3AED);border-radius:var(--radius-lg);padding:2.5rem;text-decoration:none;position:relative;overflow:hidden;transition:transform .25s;"
                onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">

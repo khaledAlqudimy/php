@@ -19,8 +19,14 @@ class AuthController extends Controller
     //  تسجيل الدخول
     // ══════════════════════════════════════════
 
-    public function showLogin()
+    public function showLogin(Request $request)
     {
+        // العودة للصفحة التي جاء منها الزائر بعد الدخول (مسارات داخلية فقط — منع التحويل لمواقع خارجية)
+        $to = (string) $request->query('redirect');
+        if (str_starts_with($to, '/') && ! str_starts_with($to, '//') && ! str_contains($to, '\\')) {
+            $request->session()->put('url.intended', url($to));
+        }
+
         return view('auth.login');
     }
 

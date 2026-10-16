@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\WishlistItem;
-use Illuminate\Http\Request;
 
 class WishlistController extends Controller
 {
@@ -35,9 +35,11 @@ class WishlistController extends Controller
             return response()->json(['added' => false, 'message' => 'تمت الإزالة من المفضلة']);
         }
 
+        $product = Product::active()->findOrFail($productId);
+
         WishlistItem::create([
             'user_id'    => auth()->id(),
-            'product_id' => $productId,
+            'product_id' => $product->id,
         ]);
 
         return response()->json(['added' => true, 'message' => 'تمت الإضافة للمفضلة']);

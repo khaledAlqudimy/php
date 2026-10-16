@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class Category extends Model
@@ -20,6 +21,10 @@ class Category extends Model
                 $category->slug = Str::slug($category->name);
             }
         });
+
+        // تحديث تصنيفات القائمة الرئيسية فور أي تعديل
+        static::saved(fn () => Cache::forget('nav.categories'));
+        static::deleted(fn () => Cache::forget('nav.categories'));
     }
 
     public function parent()

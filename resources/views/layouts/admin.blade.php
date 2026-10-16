@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="robots" content="noindex, nofollow">
     <title>@yield('title', 'لوحة التحكم') — قطعة وقصة</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -163,6 +165,55 @@
         .admin-flash.success { background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0; }
         .admin-flash.error   { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
 
+        /* ─── زر القائمة (جوال) ─── */
+        .admin-menu-btn {
+            display: none; width: 40px; height: 40px; border-radius: var(--radius);
+            background: var(--bg); border: 1px solid var(--border); cursor: pointer;
+            position: relative; flex-shrink: 0;
+        }
+        .admin-menu-btn span, .admin-menu-btn span::before, .admin-menu-btn span::after {
+            position: absolute; right: 10px; width: 18px; height: 2px; border-radius: 2px; background: var(--brown); content: '';
+        }
+        .admin-menu-btn span { top: 19px; }
+        .admin-menu-btn span::before { right: 0; top: -6px; }
+        .admin-menu-btn span::after  { right: 0; top: 6px; }
+        .admin-backdrop { display: none; }
+
+        /* ─── تجاوب: تابلت وجوال ─── */
+        .admin-main { min-width: 0; }
+        @media (max-width: 1024px) {
+            .admin-sidebar { transform: translateX(100%); transition: transform .25s ease; z-index: 60; box-shadow: -6px 0 24px rgba(0,0,0,.25); }
+            body.sidebar-open .admin-sidebar { transform: none; }
+            body.sidebar-open { overflow: hidden; }
+            .admin-backdrop { position: fixed; inset: 0; background: rgba(20,12,8,.5); z-index: 55; }
+            body.sidebar-open .admin-backdrop { display: block; }
+            .admin-main { margin-right: 0; width: 100%; }
+            .admin-menu-btn { display: inline-block; }
+            .admin-topbar { padding: 0 1rem; gap: .75rem; }
+            .admin-topbar .page-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1rem; }
+            .admin-content { padding: 1rem; }
+
+            /* الجداول تتمرر أفقياً داخل إطارها بدل أن تخرج من الشاشة */
+            .admin-content div:has(> table) { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+            .admin-content table { min-width: 640px; }
+        }
+        @media (max-width: 768px) {
+            /* الأعمدة المتجاورة تنزل تحت بعض */
+            .admin-content [style*="grid-template-columns"],
+            .admin-content .settings-grid,
+            .admin-content .set-row-2 { grid-template-columns: 1fr !important; }
+            .topbar-link .link-text { display: none; }
+            .admin-content [style*="grid-template-columns"] > * { min-width: 0; }
+            /* أشرطة الفلاتر والبحث تنكسر لأكثر من سطر */
+            .admin-content form[style*="display:flex"],
+            .admin-content form > [style*="display:flex"],
+            .admin-content .filter-bar,
+            .admin-content .toolbar, .admin-content .search-bar { flex-wrap: wrap; }
+            .admin-content .search-bar > * { flex: 1 1 140px; }
+            .admin-content form[style*="display:flex"] > *,
+            .admin-content form > [style*="display:flex"] > * { flex: 1 1 140px; }
+        }
+
         @stack('admin-styles')
     </style>
     @stack('styles')
@@ -170,7 +221,8 @@
 <body>
 
 {{-- ─── Sidebar ─── --}}
-<aside class="admin-sidebar">
+<div class="admin-backdrop" id="adminBackdrop"></div>
+<aside class="admin-sidebar" id="adminSidebar">
     <div class="sidebar-brand">
         <div class="logo">قطعة <span>وقصة</span></div>
         <small>لوحة التحكم</small>
@@ -197,9 +249,11 @@
         <a href="{{ route('admin.customers.index') }}" class="nav-item {{ request()->routeIs('admin.customers*') ? 'active' : '' }}">
             <i class="fa-solid fa-users"></i> العملاء
         </a>
+        @if(auth()->user()?->isManager())
         <a href="{{ route('admin.coupons.index') }}" class="nav-item {{ request()->routeIs('admin.coupons*') ? 'active' : '' }}">
             <i class="fa-solid fa-ticket"></i> الكوبونات
         </a>
+        @endif
 
         <div class="nav-section-title">الخدمات</div>
         <a href="{{ route('admin.auction-interest.index') }}" class="nav-item {{ request()->routeIs('admin.auction-interest*') ? 'active' : '' }}">
@@ -208,7 +262,11 @@
         <a href="{{ route('admin.personal-shopper.index') }}" class="nav-item {{ request()->routeIs('admin.personal-shopper*') ? 'active' : '' }}">
             <i class="fa-solid fa-magnifying-glass"></i> الباحث الشخصي
         </a>
+        <a href="{{ route('admin.messages.index') }}" class="nav-item {{ request()->routeIs('admin.messages*') ? 'active' : '' }}">
+            <i class="fa-solid fa-envelope"></i> رسائل التواصل
+        </a>
 
+        @if(auth()->user()?->isManager())
         <div class="nav-section-title">الإدارة</div>
         <a href="{{ route('admin.reports.index') }}" class="nav-item {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
             <i class="fa-solid fa-chart-bar"></i> التقارير
@@ -216,6 +274,7 @@
         <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
             <i class="fa-solid fa-gear"></i> الإعدادات
         </a>
+        @endif
     </nav>
 
     <div class="sidebar-footer">
@@ -240,10 +299,11 @@
 {{-- ─── Main ─── --}}
 <div class="admin-main">
     <div class="admin-topbar">
+        <button type="button" class="admin-menu-btn" id="adminMenuBtn" aria-label="القائمة" aria-controls="adminSidebar" aria-expanded="false"><span aria-hidden="true"></span></button>
         <div class="page-title">@yield('page-title', 'لوحة التحكم')</div>
         <div class="topbar-right">
             <a href="{{ route('home') }}" class="topbar-link" target="_blank">
-                <i class="fa-solid fa-arrow-up-right-from-square"></i> عرض الموقع
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> <span class="link-text">عرض الموقع</span>
             </a>
         </div>
     </div>
@@ -264,6 +324,18 @@
     </div>
 </div>
 
+<script>
+    // ─── قائمة لوحة الإدارة على الجوال ───
+    (function () {
+        const btn = document.getElementById('adminMenuBtn');
+        const backdrop = document.getElementById('adminBackdrop');
+        const set = (open) => { document.body.classList.toggle('sidebar-open', open); btn.setAttribute('aria-expanded', open); };
+        btn.addEventListener('click', () => set(!document.body.classList.contains('sidebar-open')));
+        backdrop.addEventListener('click', () => set(false));
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+        window.addEventListener('resize', () => { if (innerWidth > 1024) set(false); });
+    })();
+</script>
 @stack('scripts')
 </body>
 </html>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Services\OrderTotals;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -18,23 +19,7 @@ class CartController extends Controller
             ->with(['product.images', 'product.category'])
             ->get();
 
-        // حساب الإجماليات
-        $subtotal    = $items->sum(fn($i) => $i->product->price * $i->quantity);
-        $shippingFee = (float) \App\Models\Setting::get('shipping_fee', 30);
-        $freeMin     = (float) \App\Models\Setting::get('free_shipping_min', 500);
-        $vatPercent  = (float) \App\Models\Setting::get('vat_percent', 15);
-        $vatEnabled  = (bool)  \App\Models\Setting::get('vat_enabled', 1);
-
-        if ($subtotal >= $freeMin) $shippingFee = 0;
-
-        $taxAmount = $vatEnabled ? round($subtotal * ($vatPercent / 100), 2) : 0;
-        $total     = $subtotal + $shippingFee + $taxAmount;
-
-        return view('cart.index', compact(
-            'items', 'subtotal', 'shippingFee',
-            'taxAmount', 'vatPercent', 'vatEnabled',
-            'freeMin', 'total'
-        ));
+        return view('cart.index', ['items' => $items] + OrderTotals::calculate($items));
     }
 
     // ══════════════════════════════════════════
@@ -124,22 +109,13 @@ class CartController extends Controller
     // ─── Helper: حساب الإجماليات ───
     private function calculateTotals(): array
     {
-        $items       = auth()->user()->cartItems()->with('product')->get();
-        $subtotal    = $items->sum(fn($i) => $i->product->price * $i->quantity);
-        $shippingFee = (float) \App\Models\Setting::get('shipping_fee', 30);
-        $freeMin     = (float) \App\Models\Setting::get('free_shipping_min', 500);
-        $vatPercent  = (float) \App\Models\Setting::get('vat_percent', 15);
-        $vatEnabled  = (bool)  \App\Models\Setting::get('vat_enabled', 1);
-
-        if ($subtotal >= $freeMin) $shippingFee = 0;
-        $taxAmount = $vatEnabled ? round($subtotal * ($vatPercent / 100), 2) : 0;
-        $total     = $subtotal + $shippingFee + $taxAmount;
+        $t = OrderTotals::calculate(auth()->user()->cartItems()->with('product')->get());
 
         return [
-            'subtotal_formatted'  => number_format($subtotal, 2),
-            'shipping_formatted'  => number_format($shippingFee, 2),
-            'tax_formatted'       => number_format($taxAmount, 2),
-            'total_formatted'     => number_format($total, 2),
+            'subtotal_formatted'  => number_format($t['subtotal'], 2),
+            'shipping_formatted'  => number_format($t['shippingFee'], 2),
+            'tax_formatted'       => number_format($t['taxAmount'], 2),
+            'total_formatted'     => number_format($t['total'], 2),
         ];
     }
 }

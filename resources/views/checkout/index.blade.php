@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'إتمام الطلب')
+@section('noindex', true)
 
 @push('styles')
 <style>
@@ -436,6 +437,18 @@
                                     </div>
                                     <div class="payment-check"><i class="fa-solid fa-check fa-xs"></i></div>
                                 </label>
+
+                                @if($onlinePayment)
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="online" onchange="selectCard(this, '.payment-option')">
+                                    <div class="payment-icon">💳</div>
+                                    <div>
+                                        <div class="payment-label">دفع إلكتروني</div>
+                                        <div class="payment-desc">مدى، فيزا، ماستركارد، Apple Pay — عبر بوابة Moyasar الآمنة</div>
+                                    </div>
+                                    <div class="payment-check"><i class="fa-solid fa-check fa-xs"></i></div>
+                                </label>
+                                @endif
 
                             </div>
                             @error('payment_method')

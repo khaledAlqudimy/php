@@ -65,6 +65,19 @@
     border:none;border-radius:50%;cursor:pointer;
     display:flex;align-items:center;justify-content:center;font-size:.65rem;
 }
+.img-thumb-main {
+    position:absolute;top:.3rem;right:.3rem;
+    width:24px;height:24px;background:rgba(255,255,255,.92);color:var(--gold);
+    border:1px solid var(--border);border-radius:50%;cursor:pointer;font-size:.8rem;line-height:1;
+}
+.img-thumb-main:hover { background:var(--gold);color:#fff; }
+.img-main-badge {
+    display:none;position:absolute;bottom:0;right:0;left:0;
+    background:var(--gold);color:var(--brown);font-size:.68rem;font-weight:700;text-align:center;padding:.15rem 0;
+}
+.img-thumb.is-main { border:2px solid var(--gold); }
+.img-thumb.is-main .img-main-badge { display:block; }
+.img-thumb.is-main .img-thumb-main { display:none; }
 
 .upload-zone {
     border:2px dashed var(--border);border-radius:var(--radius);
@@ -196,19 +209,23 @@
                         @if($product->images->isNotEmpty())
                             <div class="images-grid" id="existingImages">
                                 @foreach($product->images as $img)
-                                    <div class="img-thumb" id="img-{{ $img->id }}">
+                                    <div class="img-thumb {{ $loop->first ? 'is-main' : '' }}" id="img-{{ $img->id }}" data-id="{{ $img->id }}">
                                         <img src="{{ Storage::url($img->url) }}" alt="">
-                                        <button type="button" class="img-thumb-del"
+                                        <span class="img-main-badge">الرئيسية</span>
+                                        <button type="button" class="img-thumb-main" title="اجعلها الصورة الرئيسية"
+                                            onclick="makeMain({{ $img->id }})">★</button>
+                                        <button type="button" class="img-thumb-del" title="حذف الصورة"
                                             onclick="deleteImage({{ $img->id }})">✕</button>
                                     </div>
                                 @endforeach
                             </div>
+                            <div class="form-hint" style="margin:.4rem 0 .75rem;">★ لاختيار الصورة الرئيسية التي تظهر في المتجر — ✕ للحذف</div>
                         @endif
                     @endisset
                     <div class="upload-zone" onclick="document.getElementById('imagesInput').click()">
                         <i class="fa-solid fa-cloud-arrow-up"></i>
                         <p>اضغط لرفع صور جديدة</p>
-                        <p style="font-size:.72rem;margin-top:.25rem;">JPG, PNG, WEBP — حتى 8MB لكل صورة</p>
+                        <p style="font-size:.72rem;margin-top:.25rem;">JPG, PNG, WEBP — حتى 8MB لكل صورة — يمكنك اختيار عدة صور معاً. أول صورة تكون الرئيسية</p>
                         <input type="file" id="imagesInput" name="images[]" multiple
                                accept=".jpg,.jpeg,.png,.webp"
                                onchange="previewImages(this)">
@@ -305,18 +322,34 @@ function previewImages(input) {
     });
 }
 
+const imageUrl = (id, suffix = '') => `{{ url('admin/products/images') }}/${id}${suffix}`;
+const csrf = () => document.querySelector('meta[name="csrf-token"]').content;
+
 function deleteImage(id) {
     if (!confirm('حذف هذه الصورة؟')) return;
-    fetch(`/admin/products/images/${id}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('img-' + id)?.remove();
-        }
-    });
+    fetch(imageUrl(id), { method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrf(), 'Accept': 'application/json' } })
+        .then(r => { if (!r.ok) throw r; return r.json(); })
+        .then(() => {
+            const el = document.getElementById('img-' + id);
+            const wasMain = el?.classList.contains('is-main');
+            el?.remove();
+            const first = document.querySelector('#existingImages .img-thumb');
+            if (wasMain && first) first.classList.add('is-main');
+        })
+        .catch(() => alert('تعذّر حذف الصورة، حاول مرة أخرى.'));
+}
+
+function makeMain(id) {
+    fetch(imageUrl(id, '/main'), { method: 'PATCH', headers: { 'X-CSRF-TOKEN': csrf(), 'Accept': 'application/json' } })
+        .then(r => { if (!r.ok) throw r; return r.json(); })
+        .then(() => {
+            const grid = document.getElementById('existingImages');
+            const el = document.getElementById('img-' + id);
+            grid.querySelectorAll('.img-thumb').forEach(t => t.classList.remove('is-main'));
+            el.classList.add('is-main');
+            grid.prepend(el);
+        })
+        .catch(() => alert('تعذّر تغيير الصورة الرئيسية، حاول مرة أخرى.'));
 }
 </script>
 @endpush

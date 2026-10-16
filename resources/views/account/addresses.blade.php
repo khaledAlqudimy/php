@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title','عناوين التوصيل')
+@section('noindex', true)
 
 @section('content')
 <div style="background:var(--color-brown);padding:3rem 0 2.5rem;">
@@ -16,7 +17,7 @@
             @endforeach
         </nav>
 
-        <div style="display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start;">
+        <div class="stack-md" style="display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start;">
 
             {{-- العناوين المحفوظة --}}
             <div>

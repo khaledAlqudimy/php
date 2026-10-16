@@ -50,7 +50,12 @@ class Product extends Model
 
     public function mainImage(): ?string
     {
-        return $this->images()->orderBy('order')->value('url');
+        // استخدام الصور المحمّلة مسبقاً (with('images')) بدل استعلام جديد لكل بطاقة
+        if ($this->relationLoaded('images')) {
+            return $this->images->sortBy('order')->first()?->url;
+        }
+
+        return $this->images()->value('url');
     }
 
     public function incrementViews(): void

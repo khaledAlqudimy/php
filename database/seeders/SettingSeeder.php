@@ -14,9 +14,9 @@ class SettingSeeder extends Seeder
             'site_name'          => 'قطعة وقصة',
             'site_tagline'       => 'كل قطعة تحمل روحاً وتروي قصة',
             'site_email'         => 'info@qet3a-w-qesa.sa',
-            'site_phone'         => '+966 XX XXX XXXX',
+            'site_phone'         => '',   // يُضبط من لوحة الإدارة ← الإعدادات
             'site_address'       => 'المملكة العربية السعودية',
-            'site_whatsapp'      => '+966XXXXXXXXX',
+            'site_whatsapp'      => '',   // بصيغة دولية: 9665XXXXXXXX
 
             // ─── السوشيال ───
             'social_instagram'   => '',
@@ -36,6 +36,11 @@ class SettingSeeder extends Seeder
             'vat_percent'        => '15',
             'vat_enabled'        => '1',
 
+            // ─── التحويل البنكي (تظهر في إيميل تأكيد الطلب) ───
+            'bank_name'          => '',
+            'bank_account_name'  => '',
+            'bank_iban'          => '',
+
             // ─── الباحث الشخصي ───
             'personal_shopper_enabled' => '1',
             'auction_enabled'          => '1',
@@ -44,6 +49,8 @@ class SettingSeeder extends Seeder
         foreach ($defaults as $key => $value) {
             Setting::firstOrCreate(['key' => $key], ['value' => $value]);
         }
+
+        Setting::flushCache();
 
         $this->command->info('✅ تم إنشاء إعدادات الموقع الافتراضية');
     }

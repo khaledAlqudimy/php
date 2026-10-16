@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'المتجر')
+@section('meta_description', 'تسوّق قطع الأنتيك الأصيلة: أثاث كلاسيكي، ساعات قديمة، ثريات، فضيات ونحاسيات ولوحات — مع شحن لجميع مناطق المملكة.')
 
 @push('styles')
 <style>

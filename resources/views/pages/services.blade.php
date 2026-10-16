@@ -1,6 +1,7 @@
 {{-- ════ pages/services.blade.php ════ --}}
 @extends('layouts.app')
 @section('title','خدماتنا')
+@section('meta_description', 'خدمات قطعة وقصة: بيع القطع الأثرية، المزادات، الباحث الشخصي، والتغليف والشحن الآمن.')
 
 @section('content')
 <div style="background:var(--color-brown);padding:4rem 0 3.5rem;text-align:center;">
